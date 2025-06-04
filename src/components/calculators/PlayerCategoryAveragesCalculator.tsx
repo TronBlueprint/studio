@@ -220,7 +220,7 @@ export default function PlayerCategoryAveragesCalculator() {
       <CardHeader className="pb-2 md:pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle>Player Category Averages</CardTitle>
+            <CardTitle>Player Averages</CardTitle>
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
@@ -252,6 +252,7 @@ export default function PlayerCategoryAveragesCalculator() {
             id="stats-input"
             value={statsInput}
             onChange={(e) => setStatsInput(e.target.value)}
+            placeholder={placeholderText}
             rows={15}
             className="font-code mt-1 text-xs resize-y"
           />
@@ -287,3 +288,4 @@ export default function PlayerCategoryAveragesCalculator() {
     </Card>
   );
 }
+
