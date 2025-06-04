@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -19,9 +20,11 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-11 w-full items-center justify-between rounded-xl border border-white/20 dark:border-white/10 bg-white/25 dark:bg-black/25 backdrop-blur-md px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground ring-offset-background transition-all duration-200 ease-in-out",
-      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-primary/50 focus:bg-white/30 dark:focus:bg-black/30",
+      "flex h-11 w-full items-center justify-between rounded-xl border shadow-glass-soft text-foreground placeholder:text-muted-foreground ring-offset-background transition-all duration-200 ease-in-out",
+      "bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/50 dark:border-white/20",
+      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-primary/50 focus:bg-white/50 dark:focus:bg-black/50",
       "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "px-4 py-2.5 text-sm",
       className
     )}
     {...props}
@@ -77,7 +80,8 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-white/20 dark:border-white/10 bg-white/50 dark:bg-black/50 backdrop-blur-xl shadow-glass-xl text-popover-foreground", // Glass effect for content
+        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl text-popover-foreground shadow-glass-xl", // Glass effect for content
+        "bg-white/50 dark:bg-black/50 backdrop-blur-xl border border-white/20 dark:border-white/10", // Adjusted to match other popovers
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
