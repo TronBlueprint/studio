@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,25 +128,41 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
     }
   }
   
-  const allCalculatedCategoryAveragesNumbers: number[] = [];
+  const calculatedCategoryAveragesForOverall: number[] = [];
   if (typeof categoryAverages.offense === 'number') {
-    allCalculatedCategoryAveragesNumbers.push(categoryAverages.offense);
+    calculatedCategoryAveragesForOverall.push(categoryAverages.offense);
   }
   if (typeof categoryAverages.defense === 'number') {
-    allCalculatedCategoryAveragesNumbers.push(categoryAverages.defense);
+    calculatedCategoryAveragesForOverall.push(categoryAverages.defense);
   }
   if (typeof categoryAverages.physicals === 'number') {
-    allCalculatedCategoryAveragesNumbers.push(categoryAverages.physicals);
+    calculatedCategoryAveragesForOverall.push(categoryAverages.physicals);
   }
-  if (typeof categoryAverages.summary === 'number') { // Include Summary average for overall calculation
-    allCalculatedCategoryAveragesNumbers.push(categoryAverages.summary);
+  if (typeof categoryAverages.summary === 'number') { 
+    calculatedCategoryAveragesForOverall.push(categoryAverages.summary);
   }
 
   let overallRatingValue: number | string = "N/A";
-  if (allCalculatedCategoryAveragesNumbers.length > 0) {
-    const sumOfCatAvgs = allCalculatedCategoryAveragesNumbers.reduce((sum, val) => sum + val, 0);
-    overallRatingValue = roundHalfUp(sumOfCatAvgs / allCalculatedCategoryAveragesNumbers.length, 1);
+  if (calculatedCategoryAveragesForOverall.length > 0) {
+    const sumOfCatAvgs = calculatedCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0);
+    overallRatingValue = roundHalfUp(sumOfCatAvgs / calculatedCategoryAveragesForOverall.length, 1);
+  } else {
+    // If all category averages were "N/A", overallRating should also be "N/A"
+    // This also handles the case where the input text might be structured but contains no parsable numbers for any category.
+    const allCategoriesNA = categoryAverages.offense === "N/A" &&
+                            categoryAverages.defense === "N/A" &&
+                            categoryAverages.physicals === "N/A" &&
+                            categoryAverages.summary === "N/A";
+    if (allCategoriesNA) {
+        overallRatingValue = "N/A";
+    } else if (calculatedCategoryAveragesForOverall.length === 0 && !allCategoriesNA) {
+        // This case implies something went wrong if there are no numbers for overall but not all categories are N/A.
+        // However, the logic above should correctly result in "N/A" or a number.
+        // For safety, ensure it's N/A if no numbers were pushed.
+        overallRatingValue = "N/A";
+    }
   }
+
 
   return {
     playerName: playerName, 
@@ -164,7 +180,7 @@ export default function PlayerCategoryAveragesCalculator() {
   const [averages, setAverages] = useState<PlayerAverages | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleCalculate = () => {
+  const handleCalculate = useCallback(() => {
     setError(null);
     setAverages(null);
 
@@ -178,23 +194,15 @@ export default function PlayerCategoryAveragesCalculator() {
     const parsedData = parsePlayerAveragesData(statsInput);
 
     if (parsedData) {
-      const allPrimaryNA = parsedData.offense === "N/A" && parsedData.defense === "N/A" && parsedData.physicals === "N/A";
-      
-      // Check if overall rating is N/A directly after parsing (if no numeric data at all for categories)
-       if (parsedData.overallRating === "N/A") { 
+      if (parsedData.overallRating === "N/A") { 
         setError("No valid numeric data found to calculate averages. Please check input.");
         return;
-      }
-      // This check might be redundant if overallRating === "N/A" already caught it.
-      if (parsedData.overallRating === 0 && allPrimaryNA && parsedData.summary === "N/A") {
-         setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
-         return;
       }
       setAverages(parsedData);
     } else {
       setError("Error parsing data. Please check input format and values. Ensure numeric values are provided for ratings.");
     }
-  };
+  }, [statsInput]);
   
   const formatDisplayValue = (value: number | string) => {
     if (typeof value === 'number') {
@@ -203,11 +211,11 @@ export default function PlayerCategoryAveragesCalculator() {
     return value; 
   };
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setStatsInput(placeholderText);
     setAverages(null);
     setError(null);
-  };
+  }, []);
 
   return (
     <Card>
@@ -227,7 +235,7 @@ export default function PlayerCategoryAveragesCalculator() {
                     Numeric ratings (e.g., 8 or 7.5) are averaged for each category.
                     For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: ` + "`Key: Raw Value | Numeric Rating`" + ` (e.g., ` + "`Age: 19.51 | 9`" + `). 
                     The value after " | " (space on both sides of the pipe) is used for calculation.
-                    The tool calculates category averages and an overall rating (from the 4 category averages), rounded to one decimal place.
+                    The tool calculates category averages and an overall rating (derived from the average of the four main category averages), rounded to one decimal place.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -266,10 +274,10 @@ export default function PlayerCategoryAveragesCalculator() {
           <>
             <Separator />
             <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-              <p className="text-base text-primary-foreground mb-2">
+              <p className="text-base mb-2">
                 Overall Rating: {formatDisplayValue(averages.overallRating)}
               </p>
-              <div className="text-base text-primary-foreground space-y-1">
+              <div className="text-base space-y-1">
                 <p>Offense Avg: {formatDisplayValue(averages.offense)}</p>
                 <p>Defense Avg: {formatDisplayValue(averages.defense)}</p>
                 <p>Physicals Avg: {formatDisplayValue(averages.physicals)}</p>
@@ -282,3 +290,4 @@ export default function PlayerCategoryAveragesCalculator() {
     </Card>
   );
 }
+
