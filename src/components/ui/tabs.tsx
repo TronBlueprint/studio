@@ -32,8 +32,8 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       // Base styles for all triggers
       "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium",
-      // Removed transition line to diagnose flash issue
-      // "transition-[background-color,border-color,color,box-shadow] duration-300 ease-out", 
+      // Reintroduce color transitions carefully
+      "transition-colors duration-200 ease-in-out",
       "outline-none focus:outline-none focus-visible:outline-none",
       // Remove ring focus states that conflict with active state
       "focus-visible:ring-0 focus-visible:ring-offset-0",
