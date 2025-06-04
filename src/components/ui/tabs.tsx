@@ -31,7 +31,9 @@ const TabsTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       // Base styles for all triggers (inactive and active)
-      "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-[background-color,border-color,color,box-shadow,padding] duration-200 ease-in-out outline-0 focus:outline-none focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-[background-color,border-color,color,box-shadow,padding] duration-200 ease-in-out",
+      "outline-0 focus:outline-none focus-visible:outline-none", // Ensuring no outline
+      "disabled:pointer-events-none disabled:opacity-50",
       // Inactive state specific styling
       "px-3 py-2 text-muted-foreground", // Default padding for inactive
       "hover:bg-white/10 dark:hover:bg-black/10 hover:text-foreground/90", // Subtle hover for inactive tabs
