@@ -27,8 +27,7 @@ const SelectTrigger = React.forwardRef<
       "ring-1 ring-inset ring-white/40 dark:ring-1 dark:ring-inset dark:ring-white/20",
 
       // Focus state: No visual indicators
-      "focus:outline-none", // General focus outline removal
-      "focus-visible:outline-none", // Specific for keyboard focus
+      "focus:outline-none focus-visible:outline-none", 
       
       "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       "px-4 py-2.5 text-sm",

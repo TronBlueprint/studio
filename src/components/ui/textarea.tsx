@@ -15,7 +15,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'tex
           "ring-1 ring-inset ring-white/40 dark:ring-1 dark:ring-inset dark:ring-white/20",
 
           // Focus state: No visual indicators
-          "focus-visible:outline-none",
+          "focus:outline-none focus-visible:outline-none",
           
           'disabled:cursor-not-allowed disabled:opacity-50',
           'px-4 py-2.5 text-base md:text-sm',

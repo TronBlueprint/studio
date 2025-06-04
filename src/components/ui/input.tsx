@@ -16,7 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           "ring-1 ring-inset ring-white/40 dark:ring-1 dark:ring-inset dark:ring-white/20",
 
           // Focus state: No visual indicators
-          "focus-visible:outline-none",
+          "focus:outline-none focus-visible:outline-none",
 
           "disabled:cursor-not-allowed disabled:opacity-50",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground",
