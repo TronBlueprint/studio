@@ -32,7 +32,6 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       // Base styles for all triggers
       "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium",
-      // Removed "transition-colors duration-200 ease-in-out",
       "outline-none focus:outline-none focus-visible:outline-none",
       // Remove ring focus states that conflict with active state
       "focus-visible:ring-0 focus-visible:ring-offset-0",
@@ -74,6 +73,7 @@ const TabsContent = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-2",
+      "data-[state=inactive]:hidden", // Ensure inactive tabs are hidden
       className
     )}
     {...props}
