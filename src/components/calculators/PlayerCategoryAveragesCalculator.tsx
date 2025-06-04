@@ -42,15 +42,12 @@ Potential Max: [Numeric Value]
 function roundHalfUp(num: number, decimals: number = 1): number {
   if (isNaN(num)) return num;
   const multiplier = Math.pow(10, decimals);
-  // Standard Math.round in JS rounds .5 to the nearest even integer for some implementations,
-  // but typically rounds to the nearest integer, with .5 rounding up (away from zero for negatives).
-  // For positive numbers, this works like ROUND_HALF_UP.
   return Math.round(num * multiplier) / multiplier;
 }
 
 function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   const lines = textInput.split('\n').map(line => line.trim()).filter(line => line);
-  if (lines.length < 3) return null; // Basic check for minimal data
+  if (lines.length < 3) return null; 
 
   let playerName = "Unknown Player";
   const categoriesData: { [key: string]: number[] } = {
@@ -60,28 +57,56 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
   for (const line of lines) {
     if (line.startsWith("#### ")) {
-      playerName = line.substring("#### ".length).replace(":", "").trim();
+      // Extracts player name, removing "#### " and the first colon if present, then trims.
+      let namePart = line.substring("#### ".length);
+      const colonIndex = namePart.indexOf(":");
+      if (colonIndex !== -1) {
+        playerName = namePart.substring(colonIndex + 1).trim();
+      } else {
+        playerName = namePart.trim();
+      }
+      if (playerName === "[Enter Player Name Here]") playerName = "Unknown Player";
+
+
     } else if (line.startsWith("###### ")) {
-      const categoryHeader = line.substring("###### ".length).replace(":", "").trim();
+      let categoryHeader = line.substring("###### ".length).trim();
+      // Extract the part before the first colon or space to get the category name
+      categoryHeader = categoryHeader.split(/[:\s]/, 1)[0]; 
       if (categoryHeader in CATEGORY_KEYS_PLAYER_AVG) {
         currentCategoryName = categoryHeader as keyof typeof CATEGORY_KEYS_PLAYER_AVG;
       } else {
         currentCategoryName = null;
       }
     } else if (currentCategoryName && line.includes(":")) {
-      const parts = line.split(":", 2);
+      const parts = line.split(":", 2); // Split only on the first colon
       const keyPartRaw = parts[0].trim().replace(/[*_~]/g, "").replace(/:$/, "");
       const valuePartRaw = parts[1].trim();
 
       if (CATEGORY_KEYS_PLAYER_AVG[currentCategoryName].includes(keyPartRaw)) {
-        const numericCandidateStr = valuePartRaw.split("|", 1)[0].trim().replace(/[*_~]/g, "");
+        let stringToParseForNumber: string;
+
+        if (currentCategoryName === "Physicals" && valuePartRaw.includes("|")) {
+            const valueSegments = valuePartRaw.split("|");
+            stringToParseForNumber = valueSegments[valueSegments.length - 1].trim(); // Take segment after the last pipe
+        } else {
+            // For non-Physicals categories, or Physicals without a pipe,
+            // take the part before the first pipe (if any).
+            stringToParseForNumber = valuePartRaw.split("|", 1)[0].trim();
+        }
+        
+        // Clean common markdown characters from the string to be parsed
+        stringToParseForNumber = stringToParseForNumber.replace(/[*_~]/g, "");
+        // Attempt to remove common non-numeric annotations like (rating), e.g. "8.5 (rating)" -> "8.5"
+        stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim();
+
+
         try {
-          const numericValue = parseFloat(numericCandidateStr);
-          if (!isNaN(numericValue) && numericValue >= 0) { // Assuming ratings are non-negative
+          const numericValue = parseFloat(stringToParseForNumber);
+          if (!isNaN(numericValue) && numericValue >= 0) { 
             categoriesData[currentCategoryName].push(numericValue);
           }
         } catch (e) {
-          // console.warn(`Failed to parse value for ${keyPartRaw}: ${numericCandidateStr}`);
+          // console.warn(`Failed to parse value for ${keyPartRaw}: ${stringToParseForNumber}`);
         }
       }
     }
@@ -96,7 +121,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
       const average = valuesList.reduce((sum, val) => sum + val, 0) / valuesList.length;
       const roundedAverage = roundHalfUp(average, 1);
       categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = roundedAverage;
-      if (catName !== "Summary") { // Exclude 'Summary' from overall calculation base
+      if (catName !== "Summary") { 
         validCategoryAveragesForOverall.push(roundedAverage);
       }
     } else {
@@ -108,9 +133,8 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   if (validCategoryAveragesForOverall.length > 0) {
     overallRating = roundHalfUp(validCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0) / validCategoryAveragesForOverall.length, 1);
   } else if (Object.values(categoriesData).some(arr => arr.length > 0)) {
-     overallRating = 0; // Some data existed but all filtered out for overall
+     overallRating = 0; 
   } else {
-    // No valid data at all
     return {
       playerName,
       overallRating: 0,
@@ -120,7 +144,6 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
       summary: categoryAverages.summary ?? "N/A",
     };
   }
-
 
   return {
     playerName,
@@ -150,9 +173,10 @@ export default function PlayerCategoryAveragesCalculator() {
     const parsedData = parsePlayerAveragesData(statsInput);
 
     if (parsedData) {
-      // Check if all averages are "N/A" which might mean no valid numeric data was found in any category.
       const allNA = parsedData.offense === "N/A" && parsedData.defense === "N/A" && parsedData.physicals === "N/A" && parsedData.summary === "N/A";
-      if (parsedData.overallRating === 0 && allNA && !statsInput.includes("#### Player Name:")) { // Heuristic: if overall is 0 AND all cats are N/A AND no player name line, likely bad parse
+      const isDefaultPlayerName = parsedData.playerName === "Unknown Player" || parsedData.playerName === "[Enter Player Name Here]";
+      
+      if (parsedData.overallRating === 0 && allNA && isDefaultPlayerName && !statsInput.toLowerCase().includes("#### player name:")) {
          setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
          return;
       }
