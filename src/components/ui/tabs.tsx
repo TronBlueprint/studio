@@ -32,15 +32,15 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       // Base styles for all triggers
       "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium",
-      // Remove conflicting transitions and focus styles that cause flash
-      "transition-[background-color,border-color,color,box-shadow] duration-300 ease-out",
+      // Removed transition line to diagnose flash issue
+      // "transition-[background-color,border-color,color,box-shadow] duration-300 ease-out", 
       "outline-none focus:outline-none focus-visible:outline-none",
       // Remove ring focus states that conflict with active state
       "focus-visible:ring-0 focus-visible:ring-offset-0",
       "disabled:pointer-events-none disabled:opacity-50",
       // Inactive state styling
-      "px-3 py-2 text-muted-foreground",
-      "hover:bg-white/10 dark:hover:bg-black/10 hover:text-foreground/90",
+      "px-3 py-2 text-muted-foreground", 
+      "hover:bg-white/10 dark:hover:bg-black/10 hover:text-foreground/90", 
       // Active state with stable focus handling
       "data-[state=active]:bg-white/[.18] dark:data-[state=active]:bg-black/[.18]",
       "data-[state=active]:backdrop-blur-xl",
