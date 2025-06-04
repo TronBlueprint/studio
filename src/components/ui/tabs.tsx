@@ -31,20 +31,23 @@ const TabsTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       // Base styles for all triggers (inactive and active)
-      "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors duration-200 ease-in-out", // Simplified transition
-      "outline-0", 
+      "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors duration-200 ease-in-out",
       "disabled:pointer-events-none disabled:opacity-50",
       // Inactive state specific styling
       "px-3 py-2 text-muted-foreground", 
       "hover:bg-white/10 dark:hover:bg-black/10 hover:text-foreground/90", 
-      // Active state: "Pearl White" glass effect
+      // Active state: "Pearl White" glass effect inspired by message UI
       "data-[state=active]:bg-white/[.18] dark:data-[state=active]:bg-black/[.18]",
       "data-[state=active]:backdrop-blur-xl",
       "data-[state=active]:border data-[state=active]:border-white/[.25] dark:data-[state=active]:border-white/[.15]",
       "data-[state=active]:text-primary",
       "data-[state=active]:shadow-glass-soft",
       "data-[state=active]:ring-1 data-[state=active]:ring-inset data-[state=active]:ring-white/40 dark:data-[state=active]:ring-white/20",
-      "data-[state=active]:px-4 data-[state=active]:py-2.5", 
+      "data-[state=active]:px-4 data-[state=active]:py-2.5",
+      // Fix for black flash issue
+      "outline-none focus:outline-none focus-visible:outline-none",
+      "focus-visible:ring-2 focus-visible:ring-white/40 dark:focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+      "data-[state=active]:focus-visible:ring-transparent",
       className
     )}
     {...props}
@@ -70,4 +73,3 @@ const TabsContent = React.forwardRef<
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
 export { Tabs, TabsList, TabsTrigger, TabsContent }
-

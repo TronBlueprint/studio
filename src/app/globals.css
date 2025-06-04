@@ -110,3 +110,14 @@
     overflow-x: hidden; 
   }
 }
+
+/* Fix for tab button black flash issue */
+[data-radix-tabs-trigger] {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-radix-tabs-trigger]:focus,
+[data-radix-tabs-trigger]:focus-visible {
+  outline: none !important;
+}
