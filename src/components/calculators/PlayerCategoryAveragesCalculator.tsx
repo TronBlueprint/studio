@@ -61,7 +61,9 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
     const playerNameMatch = line.match(/^(?:Player Name\s*:?\s*)?(.*)/i);
     if (playerNameMatch && playerNameMatch[1] && !Object.keys(CATEGORY_KEYS_PLAYER_AVG).some(cat => line.toLowerCase().startsWith(cat.toLowerCase()))) {
         let nameCandidate = playerNameMatch[1].trim();
-        if (nameCandidate && nameCandidate.toLowerCase() !== "sample player" && nameCandidate.toLowerCase() !== placeholderText.split('\n')[0].replace("Player Name","").trim()) {
+        // Check if the candidate is not one of the default placeholder lines or empty
+        const defaultPlayerNamePlaceholder = placeholderText.split('\n')[0].replace("Player Name","").trim().toLowerCase();
+        if (nameCandidate && nameCandidate.toLowerCase() !== "sample player" && nameCandidate.toLowerCase() !== defaultPlayerNamePlaceholder) {
             playerName = nameCandidate;
         }
         if (line.toLowerCase().startsWith("player name")) continue;
@@ -169,7 +171,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
 
 export default function PlayerCategoryAveragesCalculator() {
-  const [statsInput, setStatsInput] = useState<string>(placeholderText);
+  const [statsInput, setStatsInput] = useState<string>('');
   const [averages, setAverages] = useState<PlayerAverages | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -177,9 +179,7 @@ export default function PlayerCategoryAveragesCalculator() {
     setError(null);
     setAverages(null);
 
-    const cleanPlaceholder = placeholderText.trim();
-
-    if (!statsInput.trim() || statsInput.trim() === cleanPlaceholder || statsInput.trim().split('\n').length < 3) {
+    if (!statsInput.trim() || statsInput.trim().split('\n').length < 3) {
       setError("Please provide sufficient player data in the expected format.");
       return;
     }
@@ -210,7 +210,7 @@ export default function PlayerCategoryAveragesCalculator() {
   };
 
   const handleReset = useCallback(() => {
-    setStatsInput(placeholderText);
+    setStatsInput('');
     setAverages(null);
     setError(null);
   }, []);
@@ -233,13 +233,13 @@ export default function PlayerCategoryAveragesCalculator() {
                     Numeric ratings (e.g., 8 or 7.5) are averaged for each category.
                     For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: ` + "`Key: Raw Value | Numeric Rating`" + ` (e.g., ` + "`Age: 19.51 | 9`" + `). 
                     The value after " | " (space on both sides of the pipe) is used for calculation.
-                    The tool calculates category averages and an overall rating (derived from the average of the four main category averages), rounded to one decimal place.
+                    The tool calculates category averages and an overall rating (derived from the average of the four main category averages: Offense, Defense, Physicals, and Summary), rounded to one decimal place.
                   </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="icon" onClick={handleReset}>
             <RotateCcw className="h-4 w-4" />
           </Button>
         </div>
@@ -287,5 +287,3 @@ export default function PlayerCategoryAveragesCalculator() {
     </Card>
   );
 }
-
-    

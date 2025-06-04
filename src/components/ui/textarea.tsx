@@ -8,7 +8,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'tex
     return (
       <textarea
         className={cn(
-          'flex min-h-[100px] w-full rounded-xl border text-foreground placeholder:text-muted-foreground ring-offset-background transition-all duration-200 ease-in-out shadow-glass-soft outline-none',
+          'flex min-h-[100px] w-full rounded-xl border text-foreground placeholder:text-muted-foreground ring-offset-background shadow-glass-soft outline-none',
           // Pearl white message UI inspired style
           "bg-white/[.18] dark:bg-black/[.18] backdrop-blur-xl",
           "border-white/[.25] dark:border-white/[.15]",
