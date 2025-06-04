@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AthletcismPercentileCalculator from "@/components/calculators/AthletcismPercentileCalculator";
 import NbaProspectPhysicalRater from "@/components/calculators/NbaProspectPhysicalRater";
@@ -25,7 +26,7 @@ export default function Home() {
       <Tabs defaultValue="athleticism" className="w-full max-w-2xl shadow-xl rounded-lg overflow-hidden border border-border">
         <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 h-auto">
           <TabsTrigger value="athleticism" className="py-2.5 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md">Athleticism %</TabsTrigger>
-          <TabsTrigger value="nba-prospect" className="py-2.5 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md">NBA Prospect Rater</TabsTrigger>
+          <TabsTrigger value="nba-prospect" className="py-2.5 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md">Physical Rater</TabsTrigger>
           <TabsTrigger value="player-averages" className="py-2.5 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md">Player Averages</TabsTrigger>
         </TabsList>
         <div className="p-1 sm:p-2 md:p-0"> {/* Added padding for smaller screens as Card has its own padding*/}

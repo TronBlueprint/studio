@@ -30,9 +30,7 @@ const getPositionThresholdsPy = (position: NbaProspectFormData['position']): { t
   const thresholdsMap: { [key: string]: number } = {'PG': 68, 'SG': 70, 'SF': 72, 'PF': 74, 'C': 76};
   const start = thresholdsMap[position] || 68; 
   
-  // Creates an array of 10 thresholds: start, start+1, ..., start+9
   const thresholds = Array.from({ length: 10 }, (_, i) => start + i);
-  // Creates an array of 10 ratings: 1, 2, ..., 10
   const ratings = Array.from({ length: 10 }, (_, i) => i + 1);
   return { thresholds, ratings };
 };
@@ -40,65 +38,35 @@ const getPositionThresholdsPy = (position: NbaProspectFormData['position']): { t
 const getHeightRatingPy = (heightIn: number, position: NbaProspectFormData['position']): number => {
   const { thresholds, ratings } = getPositionThresholdsPy(position);
 
-  if (heightIn < thresholds[0]) return 1.0; // Below the lowest threshold (e.g., <68 for PG)
-  if (heightIn >= thresholds[thresholds.length - 1]) return 10.0; // At or above the highest threshold (e.g. >= 68+9 = 77 for PG)
+  if (heightIn < thresholds[0]) return 1.0; 
+  if (heightIn >= thresholds[thresholds.length - 1]) return 10.0; 
 
-  // Check for exact match or if height falls into a bucket
   for (let i = 0; i < thresholds.length; i++) {
-    if (Math.abs(heightIn - thresholds[i]) < 0.01) { // Exact match with a threshold
+    if (Math.abs(heightIn - thresholds[i]) < 0.01) { 
         return ratings[i];
     }
-    // Check for points between thresholds (for .5 ratings)
     if (i < thresholds.length - 1) {
         const lowerThresh = thresholds[i];
         const upperThresh = thresholds[i+1];
         const midPoint = (lowerThresh + upperThresh) / 2.0;
 
-        if (heightIn > lowerThresh && heightIn < upperThresh) { // height is between two thresholds
-            if (Math.abs(heightIn - midPoint) < 0.01) { // Exactly at the midpoint
+        if (heightIn > lowerThresh && heightIn < upperThresh) { 
+            if (Math.abs(heightIn - midPoint) < 0.01) { 
                 return (ratings[i] + ratings[i+1]) / 2.0;
-            } else if (heightIn < midPoint) { // Closer to lower threshold
+            } else if (heightIn < midPoint) { 
                 return ratings[i];
-            } else { // Closer to upper threshold
+            } else { 
                 return ratings[i+1];
             }
         }
     }
   }
-  // This fallback should ideally not be reached if logic is correct,
-  // but as a safeguard, if height is greater than the second to last threshold
-  // and less than the last, it implies it's in the range of the last rating before max.
-  // This might need adjustment based on how ratings for values between integer thresholds are handled.
-  // For now, let's assume the loop correctly assigns based on proximity or exact match.
-  // The python version implies if it's not an exact match or midpoint, it takes the rating of the lower bound of its interval.
-  // Let's refine to ensure that logic.
   for (let i = thresholds.length - 1; i >= 0; i--) {
-    if (heightIn >= thresholds[i] - 0.01) { // Check if height is at or above current threshold
-        // This handles cases like 68.2 for PG should be rating for 68 (which is 1 if thresholds[0] is 68)
-        // This logic needs to be precise. Example: PG: Thresholds [68,69,70...77], Ratings [1,2,3...10]
-        // Height 68 -> Rating 1. Height 68.4 -> Rating 1. Height 68.5 -> Rating 1.5. Height 68.7 -> Rating 2.
-        // The provided Python version had a complex branching for this. Let's re-verify that.
-        // The python code seems to: if exact, take rating. If midpoint, take average. Else if < midpoint, take lower. Else > midpoint, take upper.
-
-        // Re-evaluating based on the python code's structure:
-        // It iterates, if exact -> rating[i].
-        // Then it checks midpoints.
-        // Then a final loop: if height_in < thresholds[i], return ratings[i-1] or 1.0. This implies discrete steps.
-
-        // Let's use the simpler logic from the Python structure:
-        // 1. Exact match to a threshold -> ratings[i]
-        // 2. Midpoint between thresholds[i] and thresholds[i+1] -> (ratings[i] + ratings[i+1]) / 2.0
-        // 3. Between thresholds[i] and midPoint -> ratings[i]
-        // 4. Between midPoint and thresholds[i+1] -> ratings[i+1]
-
-        // This was already covered by the loop with midPoint logic.
-        // If height is 76.9 for PG (max threshold is 77 for rating 10)
-        // It falls between 76 (rating 9) and 77 (rating 10). Midpoint 76.5. 76.9 > 76.5 -> rating 10. Correct.
-        // Height 68.2 for PG. Thresholds[0]=68 (rating 1), Thresholds[1]=69 (rating 2). Midpoint 68.5. 68.2 < 68.5 -> rating 1. Correct.
-        return ratings[i]; // If it's >= last iterated threshold
+    if (heightIn >= thresholds[i] - 0.01) { 
+        return ratings[i]; 
     }
   }
-  return 1.0; // Should be caught by initial checks.
+  return 1.0; 
 };
 
 
@@ -108,49 +76,62 @@ const wingspanPoints = [
   { diff: 4.5, rating: 7.0 }, { diff: 4.25, rating: 6.5 }, { diff: 4.0, rating: 6.0 },
   { diff: 3.5, rating: 5.5 }, { diff: 3.0, rating: 5.0 }, { diff: 2.5, rating: 4.5 },
   { diff: 2.0, rating: 4.0 }, { diff: 1.5, rating: 3.5 }, { diff: 1.0, rating: 3.0 },
-  { diff: 0.5, rating: 2.5 },
-  { diff: 0.25, rating: 0.5 }, 
+  { diff: 0.5, rating: 2.5 }, { diff: 0.25, rating: 2.25}, // Interpolation point, will round to 2.5
   { diff: 0.0, rating: 2.0 }, 
   { diff: -0.5, rating: 1.5 },
-  { diff: -1.0, rating: 1.0 }
+  { diff: -1.0, rating: 1.0 } // -1.0 or worse
 ].sort((a, b) => b.diff - a.diff); // Sort by diff in descending order for processing
 
 const getWingspanRatingPy = (differential: number): number => {
   const epsilon = 0.0001; // For floating point comparisons
 
-  if (differential >= wingspanPoints[0].diff - epsilon) { 
-    return wingspanPoints[0].rating; 
+  if (differential >= wingspanPoints[0].diff - epsilon) { // At or above highest diff (e.g. >= 7.0)
+    return wingspanPoints[0].rating; // 10.0
   }
-  if (differential <= wingspanPoints[wingspanPoints.length - 1].diff + epsilon) { 
-    return wingspanPoints[wingspanPoints.length - 1].rating; 
+  // Check if differential is at or below the lowest defined positive point that's not the absolute minimum
+  // The last point in the sorted array is {-1.0, 1.0}
+  if (differential <= wingspanPoints[wingspanPoints.length - 1].diff + epsilon) { // At or below -1.0
+    return wingspanPoints[wingspanPoints.length - 1].rating; // 1.0
   }
 
+  // Find the two points the differential falls between for interpolation
   for (let i = 0; i < wingspanPoints.length - 1; i++) {
-    const p1 = wingspanPoints[i];     // Current point (higher differential)
-    const p2 = wingspanPoints[i+1];   // Next point (lower differential)
+    const p1 = wingspanPoints[i];     // Current point (higher differential, e.g. {diff: 0.5, rating: 2.5})
+    const p2 = wingspanPoints[i+1];   // Next point (lower differential, e.g. {diff: 0.25, rating: 2.25})
 
+    // Exact match to a defined point in the scale
     if (Math.abs(differential - p1.diff) < epsilon) return p1.rating;
-    if (Math.abs(differential - p2.diff) < epsilon) return p2.rating;
+    // This check is covered by the loop's nature or the initial boundary checks for p2.diff being the min.
 
     if (differential < p1.diff && differential > p2.diff) {
+      // Interpolate: y = y1 + (x - x1) * (y2 - y1) / (x2 - x1)
+      // Here: rating = p2.rating + (differential - p2.diff) * (p1.rating - p2.rating) / (p1.diff - p2.diff)
       const interpolatedRating = p2.rating + 
         (differential - p2.diff) * (p1.rating - p2.rating) / (p1.diff - p2.diff);
       
-      // Rounds to nearest 0.5. If exactly .25 or .75, rounds up to next 0.5.
-      // e.g. 2.25 -> round(4.5)/2 = 2.5.  2.1 -> round(4.2)/2 = 2.0. 2.75 -> round(5.5)/2 = 3.0
+      // Round to nearest 0.5. If exactly .25 or .75, it rounds up to the next 0.5.
+      // e.g., 2.1 -> 2.0; 2.25 -> 2.5; 2.6 -> 2.5; 2.75 -> 3.0
       return Math.round(interpolatedRating * 2) / 2;
     }
   }
   
-  return wingspanPoints[wingspanPoints.length - 1].rating; 
+  // Fallback for anything not caught, though logic should cover ranges.
+  // If differential is very close to the lowest point p2.diff (e.g., -0.99 for p2.diff = -1.0)
+  if (Math.abs(differential - wingspanPoints[wingspanPoints.length-1].diff) < epsilon) {
+    return wingspanPoints[wingspanPoints.length-1].rating;
+  }
+  
+  // Default to 1.0 if it's some edge case not perfectly fitting (e.g., slightly above -1.0 but not matching other rule)
+  // This should ideally not be hit if the scale and logic are comprehensive.
+  return 1.0; 
 };
 
 
-// Calculate overall 0-100 score
+// Calculate overall 0-10 score
 const calculateOverallRating = (data: NbaProspectFormData): number => {
-  const agePy = data.age; // number
-  const heightPy = data.height; // number (inches, transformed by Zod)
-  const wingspanPy = data.wingspan; // number (inches, transformed by Zod)
+  const agePy = data.age; 
+  const heightPy = data.height; 
+  const wingspanPy = data.wingspan; 
   const positionPy = data.position;
 
   const ageRating = getAgeRatingPy(agePy); // 1-10
@@ -158,13 +139,16 @@ const calculateOverallRating = (data: NbaProspectFormData): number => {
   const wingspanDifferential = wingspanPy - heightPy;
   const wingspanRating = getWingspanRatingPy(wingspanDifferential); // 1-10 (can be x.5)
 
-  const normAgeScore = (ageRating - 1) / (10 - 1); 
-  const normHeightScore = (heightRating - 1) / (10 - 1); 
-  const normWingspanScore = (wingspanRating - 1) / (10 - 1); 
+  // Normalize 1-10 ratings to 0-1 scores. Handles cases where rating might be 0 or less if source data changes.
+  const normAgeScore = Math.max(0, (ageRating - 1) / (10 - 1)); 
+  const normHeightScore = Math.max(0, (heightRating - 1) / (10 - 1)); 
+  const normWingspanScore = Math.max(0, (wingspanRating - 1) / (10 - 1)); 
 
-  const overallScore = (normAgeScore * 30) + (normHeightScore * 35) + (normWingspanScore * 35);
+  // Weighted sum for overall score, targeting a 0-10 scale.
+  // Weights: Age (30% -> 3.0), Height (35% -> 3.5), Wingspan (35% -> 3.5)
+  const overallScoreOutOf10 = (normAgeScore * 3.0) + (normHeightScore * 3.5) + (normWingspanScore * 3.5);
   
-  return Math.max(0, Math.min(100, Math.round(overallScore)));
+  return Math.max(0, Math.min(10, overallScoreOutOf10)); // Ensure score is within 0-10 range.
 };
 
 
@@ -176,14 +160,14 @@ export default function NbaProspectPhysicalRater() {
     resolver: zodResolver(NbaProspectSchema),
     defaultValues: {
       age: undefined,
-      height: "", // Changed from undefined to empty string for text input
-      wingspan: "", // Changed from undefined to empty string for text input
+      height: "", 
+      wingspan: "", 
       position: undefined,
     },
     mode: "onChange" 
   });
 
-  function onSubmit(data: NbaProspectFormData) { // data.height and data.wingspan are numbers here due to Zod transform
+  function onSubmit(data: NbaProspectFormData) { 
     const ageRating = getAgeRatingPy(data.age);
     const heightRating = getHeightRatingPy(data.height, data.position);
     const wingspanDifferential = data.wingspan - data.height;
@@ -195,7 +179,7 @@ export default function NbaProspectPhysicalRater() {
         wingspan: wingspanRating
     });
 
-    const overallRating = calculateOverallRating(data);
+    const overallRating = calculateOverallRating(data); // This will be 0-10
     setRatingResult(overallRating);
   }
 
@@ -204,7 +188,7 @@ export default function NbaProspectPhysicalRater() {
       <CardHeader>
         <CardTitle className="font-headline">NBA Prospect Physical Rater</CardTitle>
         <CardDescription>
-          Input age, height (e.g., 6'5" or 6'5.5), wingspan (e.g., 6'8" or 6'8.5), and position to get a physical rating score (0-100). Individual ratings (1-10) for age, height, and wingspan differential are also shown.
+          Input age, height (e.g., 6'5" or 6'5.5), wingspan (e.g., 6'8" or 6'8.5), and position to get a physical rating score (0-10). Individual ratings (1-10) for age, height, and wingspan differential are also shown.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -279,7 +263,7 @@ export default function NbaProspectPhysicalRater() {
                 <Separator />
                 <div className="text-center p-4 bg-accent/10 rounded-md w-full">
                   <h3 className="text-lg font-semibold text-accent-foreground">Overall Physical Rating</h3>
-                  <p className="text-3xl font-bold text-accent">{ratingResult}/100</p>
+                  <p className="text-3xl font-bold text-accent">{ratingResult.toFixed(2)}/10</p>
                   <div className="mt-3 text-sm text-muted-foreground space-y-1">
                     <p>Age Rating: {individualRatings.age.toFixed(1)}/10</p>
                     <p>Height Rating: {individualRatings.height.toFixed(1)}/10</p>
