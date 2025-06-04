@@ -13,22 +13,10 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 
-const calculatePercentile = (value: number, min: number, max: number, lowerIsBetter: boolean = false): number => {
-  if (min === max) return 50; 
-  
+const calculatePercentile = (value: number, min: number, max: number): number => {
   let clampedValue = Math.max(min, Math.min(max, value));
-
-  let score: number;
-  if (lowerIsBetter) {
-    // For lower is better, a raw value equal to min_val is 100th percentile, max_val is 0th.
-    // This was the original interpretation based on "lower is better = true"
-    // score = (max_val - clampedValue) / (max_val - min_val);
-    // Based on Python code provided (03/28), it should be direct:
-    score = (clampedValue - min) / (max - min);
-  } else {
-    score = (clampedValue - min) / (max - min);
-  }
-  return Math.max(0, Math.min(100, score * 100));
+  const percentile = ((clampedValue - min) / (max - min)) * 100;
+  return Math.max(0, Math.min(100, percentile));
 };
 
 export default function AthletcismPercentileCalculator() {
@@ -45,11 +33,9 @@ export default function AthletcismPercentileCalculator() {
   });
 
   function onSubmit(data: AthleticismFormData) {
-    // As per Python code: Speed and Agility (45-95 range) direct percentile. Lower raw score = lower percentile.
-    const speedPercentile = calculatePercentile(data.speed, 45, 95, false); 
-    const agilityPercentile = calculatePercentile(data.agility, 45, 95, false);
-    // Vertical (50-99 range) direct percentile. Higher raw score = higher percentile.
-    const verticalPercentile = calculatePercentile(data.vertical, 50, 99, false);
+    const speedPercentile = calculatePercentile(data.speed, 45, 95);
+    const agilityPercentile = calculatePercentile(data.agility, 45, 95);
+    const verticalPercentile = calculatePercentile(data.vertical, 50, 99);
 
     const overallPercentile = (speedPercentile + agilityPercentile + verticalPercentile) / 3;
     setPercentileResult(overallPercentile);
@@ -72,9 +58,10 @@ export default function AthletcismPercentileCalculator() {
               </TooltipTrigger>
               <TooltipContent side="top" align="end" className="max-w-sm">
                 <p className="text-sm text-muted-foreground">
-                  Input estimated athletic ratings. Calculates overall athleticism percentile.
-                  For Speed and Agility ratings (45-95), a lower raw value means better performance but results in a lower percentile.
-                  For Vertical rating (50-99), a higher raw value means better performance and results in a higher percentile.
+                  Input estimated athletic ratings to calculate overall and individual athleticism percentiles.
+                  Speed and Agility are rated 45-95 (a raw score of 45 is 0th percentile, 95 is 100th).
+                  Vertical is rated 50-99 (a raw score of 50 is 0th percentile, 99 is 100th).
+                  Ensure values are within the specified ranges.
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -125,7 +112,7 @@ export default function AthletcismPercentileCalculator() {
             />
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Calculate Percentile</Button>
+            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Percentile</Button>
             {percentileResult !== null && individualPercentiles !== null && (
               <>
                 <Separator />

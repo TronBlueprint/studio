@@ -33,7 +33,7 @@ const getPositionThresholdsPy = (position: NbaProspectFormData['position']): { t
   const start = thresholdsMap[position] || 68; 
   
   const thresholds = Array.from({ length: 10 }, (_, i) => start + i); 
-  const ratings = Array.from({ length: 10 }, (_, i) => i + 1);
+  const ratings = Array.from({ length: 10 }, (_, i) => i + 1); // Ratings 1-10
   return { thresholds, ratings };
 };
 
@@ -62,12 +62,11 @@ const getHeightRatingPy = (heightIn: number, position: NbaProspectFormData['posi
         }
     }
   }
-  if (Math.abs(heightIn - thresholds[thresholds.length - 1]) < 0.01) {
+   if (Math.abs(heightIn - thresholds[thresholds.length - 1]) < 0.01) {
       return ratings[thresholds.length - 1];
   }
   return 1.0; 
 };
-
 
 const wingspanPoints = [
   { diff: 7.0, rating: 10.0 }, { diff: 6.5, rating: 9.5 }, { diff: 6.0, rating: 9.0 },
@@ -75,12 +74,9 @@ const wingspanPoints = [
   { diff: 4.5, rating: 7.0 }, { diff: 4.25, rating: 6.5 }, { diff: 4.0, rating: 6.0 },
   { diff: 3.5, rating: 5.5 }, { diff: 3.0, rating: 5.0 }, { diff: 2.5, rating: 4.5 },
   { diff: 2.0, rating: 4.0 }, { diff: 1.5, rating: 3.5 }, { diff: 1.0, rating: 3.0 },
-  { diff: 0.5, rating: 2.5 }, 
-  { diff: 0.25, rating: 2.25}, 
-  { diff: 0.0, rating: 2.0 }, 
-  { diff: -0.5, rating: 1.5 },
-  { diff: -1.0, rating: 1.0 } 
-].sort((a, b) => b.diff - a.diff); 
+  { diff: 0.5, rating: 2.5 }, { diff: 0.25, rating: 2.25 }, { diff: 0.0, rating: 2.0 }, 
+  { diff: -0.5, rating: 1.5 }, { diff: -1.0, rating: 1.0 } 
+].sort((a, b) => b.diff - a.diff); // Ensure descending order by diff for correct iteration
 
 const getWingspanRatingPy = (differential: number): number => {
   const epsilon = 0.0001; 
@@ -93,25 +89,32 @@ const getWingspanRatingPy = (differential: number): number => {
   }
 
   for (let i = 0; i < wingspanPoints.length - 1; i++) {
-    const p1 = wingspanPoints[i];    
-    const p2 = wingspanPoints[i+1];  
+    const p1 = wingspanPoints[i]; // Current point (higher differential)
+    const p2 = wingspanPoints[i+1]; // Next point (lower differential)
 
+    // Exact match for the higher point of the current segment
     if (Math.abs(differential - p1.diff) < epsilon) return p1.rating;
     
-    if (differential < p1.diff && differential > p2.diff) {
+    // If differential is between p1.diff and p2.diff (exclusive of p1.diff, inclusive of p2.diff for this loop pass)
+    if (differential < p1.diff && differential >= p2.diff - epsilon) {
+      // Check for exact match with p2.diff
+      if (Math.abs(differential - p2.diff) < epsilon) return p2.rating;
+
+      // Interpolate
       const interpolatedRating = p2.rating + 
         (differential - p2.diff) * (p1.rating - p2.rating) / (p1.diff - p2.diff);
+      // Round to nearest 0.5, with .25 rounding up to .5, and .75 rounding up to .0 of next number
       return Math.round(interpolatedRating * 2) / 2;
     }
   }
   
+  // Fallback, though theoretically covered, this handles the lowest boundary explicitly
    if (Math.abs(differential - wingspanPoints[wingspanPoints.length-1].diff) < epsilon) {
     return wingspanPoints[wingspanPoints.length-1].rating;
   }
   
-  return 1.0; 
+  return 1.0; // Should not be reached if logic is correct and scale covers all possibilities
 };
-
 
 const calculateOverallRating = (data: NbaProspectFormData): number => {
   const agePy = data.age; 
@@ -128,8 +131,10 @@ const calculateOverallRating = (data: NbaProspectFormData): number => {
   const normHeightScore = Math.max(0, (heightRating - 1) / (10 - 1)); 
   const normWingspanScore = Math.max(0, (wingspanRating - 1) / (10 - 1)); 
 
+  // Weights: Age 30%, Height 35%, Wingspan 35%
   const overallScoreOutOf10 = (normAgeScore * 3.0) + (normHeightScore * 3.5) + (normWingspanScore * 3.5);
   
+  // Round to one decimal place (e.g., 7.85 -> 7.9, 7.84 -> 7.8)
   const roundedOverallScore = Math.round(overallScoreOutOf10 * 10) / 10;
 
   return Math.max(0, Math.min(10, roundedOverallScore));
@@ -182,7 +187,7 @@ export default function NbaProspectPhysicalRater() {
                   Enter prospect's age (e.g., 19.75 for 19 years and 9 months; range 17-30), 
                   height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
                   Height/wingspan can include .25, .5, .75 fractions (e.g., 6'5.25").
-                  Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings.
+                  Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings for age, height, and wingspan differential.
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -249,7 +254,7 @@ export default function NbaProspectPhysicalRater() {
                           key={pos.value} 
                           value={pos.value}
                           className={cn(
-                            "focus:bg-primary focus:text-primary-foreground data-[highlighted]:bg-primary data-[highlighted]:text-primary-foreground"
+                            "focus:bg-primary/30 dark:focus:bg-primary/40 focus:text-primary-foreground data-[highlighted]:bg-primary/30 dark:data-[highlighted]:bg-primary/40 data-[highlighted]:text-primary-foreground"
                           )}
                         >
                           {pos.label}
@@ -263,7 +268,7 @@ export default function NbaProspectPhysicalRater() {
             />
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Calculate Rating</Button>
+            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Rating</Button>
             {ratingResult !== null && individualRatings !== null && (
               <>
                 <Separator />

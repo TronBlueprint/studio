@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -10,6 +11,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        sans: ['Inter', 'sans-serif'], // Default sans-serif
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
         code: ['Source Code Pro', 'monospace'],
@@ -18,11 +20,11 @@ export default {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
-          DEFAULT: 'hsl(var(--card))',
+          DEFAULT: 'hsl(var(--card))', // e.g., bg-white/30
           foreground: 'hsl(var(--card-foreground))',
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
+          DEFAULT: 'hsl(var(--popover))', // e.g., bg-white/50
           foreground: 'hsl(var(--popover-foreground))',
         },
         primary: {
@@ -45,8 +47,8 @@ export default {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
+        border: 'hsl(var(--border))', // e.g., border-white/20
+        input: 'hsl(var(--input))', // e.g., bg-white/20
         ring: 'hsl(var(--ring))',
         chart: {
           '1': 'hsl(var(--chart-1))',
@@ -67,20 +69,37 @@ export default {
         },
       },
       borderRadius: {
-        // More generous rounding
-        'sm': '0.5rem', // formerly calc(var(--radius) - 4px)
-        'DEFAULT': '0.75rem', // default for non-specified, was md
-        'md': '0.75rem', // formerly calc(var(--radius) - 2px)
-        'lg': '1rem',    // formerly var(--radius)
-        'xl': '1.25rem',
-        '2xl': '1.5rem',
-        '3xl': '2rem',
+        'sm': '0.5rem',
+        'DEFAULT': '0.75rem',
+        'md': '0.75rem',
+        'lg': '1rem',
+        'xl': '1.25rem', // More generous
+        '2xl': '1.5rem', // Even more
+        '3xl': '1.75rem', // Example was rounded-3xl, this is close.
         'full': '9999px',
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)', // Softer, more diffused shadow
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
         'glass-lg': '0 10px 35px 0 rgba(31, 38, 135, 0.1)',
         'glass-xl': '0 15px 45px 0 rgba(31, 38, 135, 0.12)',
+        'glass-soft': '0 6px 24px rgba(0,0,0,0.1)', // Softer shadow for general glass
+        'primary-glass-shadow': '0 6px 20px hsl(var(--primary)/0.2)',
+        'primary-glass-shadow-hover': '0 8px 26px hsl(var(--primary)/0.25)',
+      },
+      backdropBlur: {
+        xs: '2px',
+        sm: '4px',
+        md: '8px', // default
+        lg: '16px',
+        xl: '24px',
+        '2xl': '40px',
+        '3xl': '64px',
+        // Adding specific values from example if needed
+        '10px': '10px',
+        '20px': '20px',
+        '25px': '25px',
+        '30px': '30px',
+        '35px': '35px',
       },
       keyframes: {
         'accordion-down': {

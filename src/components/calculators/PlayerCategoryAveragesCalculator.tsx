@@ -40,8 +40,11 @@ Potential Max: 9.5
 `;
 
 function roundHalfUp(num: number, decimals: number = 1): number {
-  if (isNaN(num) || typeof num !== 'number') return num;
+  if (isNaN(num) || typeof num !== 'number') return num; // Return original if not a valid number for rounding
   const multiplier = Math.pow(10, decimals);
+  // Standard rounding: Math.round(num * multiplier + Number.EPSILON * multiplier) / multiplier;
+  // For precise control, especially financial or critical calcs, Decimal.js or similar is better.
+  // For this app, Math.round should be sufficient for display purposes.
   return Math.round(num * multiplier) / multiplier;
 }
 
@@ -58,12 +61,15 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   for (const rawLine of lines) {
     let line = rawLine; 
 
-    if (line.toLowerCase().startsWith("player name")) {
-      let nameCandidate = line.substring("player name".length).trim().replace(/^[:\s]+/, '');
-      if (nameCandidate && nameCandidate.toLowerCase() !== "sample player") {
-        playerName = nameCandidate;
-      }
-      continue;
+    // Player Name Parsing (allow without colon and with optional "Player Name" prefix)
+    const playerNameMatch = line.match(/^(?:Player Name\s*:?\s*)?(.*)/i);
+    if (playerNameMatch && playerNameMatch[1] && !Object.keys(CATEGORY_KEYS_PLAYER_AVG).some(cat => line.toLowerCase().startsWith(cat.toLowerCase()))) {
+        let nameCandidate = playerNameMatch[1].trim();
+        if (nameCandidate && nameCandidate.toLowerCase() !== "sample player" && nameCandidate.toLowerCase() !== placeholderText.split('\n')[0].replace("Player Name","").trim()) {
+            playerName = nameCandidate;
+        }
+        // Continue if it's a player name line, unless it could also be a category start.
+        if (line.toLowerCase().startsWith("player name")) continue;
     }
     
     const categoryMatch = line.match(/^(Offense|Defense|Physicals|Summary)/i);
@@ -73,9 +79,9 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
         if (foundCategoryKey) {
             currentCategoryName = foundCategoryKey as keyof typeof CATEGORY_KEYS_PLAYER_AVG;
         } else {
-            currentCategoryName = null;
+            currentCategoryName = null; // Should not happen if regex is correct
         }
-        continue;
+        continue; // This line was a category header
     }
 
 
@@ -89,22 +95,26 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
         let stringToParseForNumber: string;
 
         if (currentCategoryName === "Physicals" && (keyPartRaw === "Age" || keyPartRaw === "Height" || keyPartRaw === "Wingspan")) {
+            // Expect "Raw Value | Rating" format. Take the part after the LAST pipe.
             const valueSegments = valuePartRaw.split(/\s*\|\s*/); 
             if (valueSegments.length > 1) {
                 stringToParseForNumber = valueSegments[valueSegments.length - 1].trim();
             } else {
+                // If no pipe, try to parse the whole thing, but it might be an error for these fields.
+                // For now, let's assume it's an error or just the rating was provided.
                 stringToParseForNumber = valueSegments[0].trim(); 
             }
         } else {
+            // For other categories, take the part before the first pipe if it exists.
             stringToParseForNumber = valuePartRaw.split("|", 1)[0].trim();
         }
         
         stringToParseForNumber = stringToParseForNumber.replace(/[*_~]/g, "");
-        stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim(); 
+        stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim(); // Remove trailing comments in parentheses
 
         try {
           const numericValue = parseFloat(stringToParseForNumber);
-          if (!isNaN(numericValue) && numericValue >= 0) { 
+          if (!isNaN(numericValue) && numericValue >= 0) { // Ensure it's a non-negative number
             categoriesData[currentCategoryName].push(numericValue);
           }
         } catch (e) {
@@ -123,27 +133,32 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
       const average = valuesList.reduce((sum, val) => sum + val, 0) / valuesList.length;
       const roundedAverage = roundHalfUp(average, 1);
       categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = roundedAverage;
-      if (catName !== "Summary") { 
+      if (catName !== "Summary") { // Exclude "Summary" category itself from overall rating calculation base
         validCategoryAveragesForOverall.push(roundedAverage);
       }
     } else {
-      categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = "N/A";
+      categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = "N/A"; // Or 0.0 if preferred for consistency
     }
   }
   
-  let overallRatingValue: number | string = 0;
+  let overallRatingValue: number | string = 0; // Default to 0 instead of "N/A" if calculable
   if (validCategoryAveragesForOverall.length > 0) {
     overallRatingValue = roundHalfUp(validCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0) / validCategoryAveragesForOverall.length, 1);
   } else if (Object.values(categoriesData).some(arr => arr.length > 0)) {
+     // Some data was parsed but didn't contribute to overall (e.g., only Summary had values)
      overallRatingValue = 0; 
   } else {
+     // No numeric data found at all
      overallRatingValue = "N/A"; 
   }
   
-  const finalOverallRating = typeof overallRatingValue === 'number' ? overallRatingValue : (Object.values(categoriesData).some(arr => arr.length > 0) ? 0 : "N/A");
+  const finalOverallRating = typeof overallRatingValue === 'number' 
+    ? overallRatingValue 
+    : (Object.values(categoriesData).some(arr => arr.length > 0) ? 0.0 : "N/A");
+
 
   return {
-    playerName: playerName, 
+    playerName: playerName, // Keep playerName in the returned object, just don't display it if not needed.
     overallRating: finalOverallRating,
     offense: categoryAverages.offense ?? "N/A",
     defense: categoryAverages.defense ?? "N/A",
@@ -172,13 +187,14 @@ export default function PlayerCategoryAveragesCalculator() {
     const parsedData = parsePlayerAveragesData(statsInput);
 
     if (parsedData) {
-      const allNA = parsedData.offense === "N/A" && parsedData.defense === "N/A" && parsedData.physicals === "N/A" && parsedData.summary === "N/A";
+      // Check if all primary categories are N/A and overall is 0 or "N/A"
+      const allPrimaryNA = parsedData.offense === "N/A" && parsedData.defense === "N/A" && parsedData.physicals === "N/A";
       
-      if (parsedData.overallRating === 0 && allNA && (parsedData.playerName === "Player" || !statsInput.toLowerCase().includes("player name"))) {
+      if (parsedData.overallRating === 0 && allPrimaryNA && parsedData.summary === "N/A") {
          setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
          return;
       }
-       if (parsedData.overallRating === "N/A" && allNA) {
+       if (parsedData.overallRating === "N/A") { // Implies no valid data at all was found
         setError("No valid numeric data found to calculate averages. Please check input.");
         return;
       }
@@ -190,9 +206,9 @@ export default function PlayerCategoryAveragesCalculator() {
   
   const formatDisplayValue = (value: number | string) => {
     if (typeof value === 'number') {
-      return value.toFixed(1);
+      return value.toFixed(1); // Always display one decimal place
     }
-    return value; 
+    return value; // Handles "N/A"
   };
 
   return (
@@ -209,10 +225,9 @@ export default function PlayerCategoryAveragesCalculator() {
                 <p className="text-sm text-muted-foreground">
                   Paste player report data using the format shown in the placeholder. 
                   Category names (Offense, Defense, Physicals, Summary) identify sections. 
-                  Numeric ratings can be whole numbers (e.g., 8) or decimals (e.g., 7.5).
-                  For 'Offense', 'Defense', 'Summary', and 'Athleticism' (under Physicals), provide a direct numeric rating (e.g., `Shooting: 8.5`).
+                  Numeric ratings (e.g., 8 or 7.5) are averaged for each category.
                   For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: `Key: Raw Value | Numeric Rating` (e.g., `Age: 19.51 | 9`). 
-                  Ensure a space before and after the `|` character. The numeric rating after the `|` is used for calculation.
+                  The value after " | " (space-pipe-space) is used for calculation.
                   The tool calculates category averages and an overall rating, rounded to one decimal place.
                 </p>
               </TooltipContent>
@@ -240,7 +255,7 @@ export default function PlayerCategoryAveragesCalculator() {
         )}
       </CardContent>
       <CardFooter className="flex flex-col items-stretch gap-4">
-        <Button onClick={handleCalculate} className="w-full bg-primary hover:bg-primary/90">
+        <Button onClick={handleCalculate} variant="primaryGlass" className="w-full">
           Calculate Averages
         </Button>
         {averages && (
