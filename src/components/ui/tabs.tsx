@@ -15,7 +15,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-auto items-center justify-center rounded-xl p-1 text-muted-foreground", // Cleaner, more minimalist list
+      "inline-flex h-auto items-center justify-center rounded-xl p-1 text-muted-foreground", // Minimalist list container
       className
     )}
     {...props}
@@ -30,10 +30,19 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground ring-offset-background transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-      "hover:bg-white/20 dark:hover:bg-black/20 hover:text-foreground/90", // Subtle hover for inactive tabs
-      // Active state: Sleeker, more solid glass
-      "data-[state=active]:bg-white/70 dark:data-[state=active]:bg-black/60 data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:backdrop-blur-md",
+      // Base styles for all triggers (inactive and active)
+      "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 ease-in-out focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+      // Inactive state specific styling
+      "px-3 py-2 text-muted-foreground",
+      "hover:bg-white/10 dark:hover:bg-black/10 hover:text-foreground/90", // Subtle hover for inactive tabs
+      // Active state: "Pearl White" glass effect inspired by the message UI
+      "data-[state=active]:bg-white/[.18] dark:data-[state=active]:bg-black/[.18]",
+      "data-[state=active]:backdrop-blur-xl",
+      "data-[state=active]:border data-[state=active]:border-white/[.25] dark:data-[state=active]:border-white/[.15]",
+      "data-[state=active]:text-primary",
+      "data-[state=active]:shadow-glass-soft",
+      "data-[state=active]:ring-1 data-[state=active]:ring-inset data-[state=active]:ring-white/40 dark:data-[state=active]:ring-white/20",
+      "data-[state=active]:px-4 data-[state=active]:py-2.5", // Slightly larger padding for active tab
       className
     )}
     {...props}
@@ -48,7 +57,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none", // Removed ring as per general focus removal
+      "mt-2 ring-offset-background focus-visible:outline-none",
       className
     )}
     {...props}
