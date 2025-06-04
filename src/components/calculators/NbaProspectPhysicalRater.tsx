@@ -108,41 +108,15 @@ const getWingspanRatingPy = (differential: number): number => {
     }
   }
   
-  // Fallback, though theoretically covered, this handles the lowest boundary explicitly
    if (Math.abs(differential - wingspanPoints[wingspanPoints.length-1].diff) < epsilon) {
     return wingspanPoints[wingspanPoints.length-1].rating;
   }
   
-  return 1.0; // Should not be reached if logic is correct and scale covers all possibilities
-};
-
-const calculateOverallRating = (data: NbaProspectFormData): number => {
-  const agePy = data.age; 
-  const heightPy = data.height; 
-  const wingspanPy = data.wingspan; 
-  const positionPy = data.position;
-
-  const ageRating = getAgeRatingPy(agePy); 
-  const heightRating = getHeightRatingPy(heightPy, positionPy); 
-  const wingspanDifferential = wingspanPy - heightPy;
-  const wingspanRating = getWingspanRatingPy(wingspanDifferential); 
-
-  const normAgeScore = Math.max(0, (ageRating - 1) / (10 - 1)); 
-  const normHeightScore = Math.max(0, (heightRating - 1) / (10 - 1)); 
-  const normWingspanScore = Math.max(0, (wingspanRating - 1) / (10 - 1)); 
-
-  // Weights: Age 30%, Height 35%, Wingspan 35%
-  const overallScoreOutOf10 = (normAgeScore * 3.0) + (normHeightScore * 3.5) + (normWingspanScore * 3.5);
-  
-  // Round to one decimal place (e.g., 7.85 -> 7.9, 7.84 -> 7.8)
-  const roundedOverallScore = Math.round(overallScoreOutOf10 * 10) / 10;
-
-  return Math.max(0, Math.min(10, roundedOverallScore));
+  return 1.0; 
 };
 
 
 export default function NbaProspectPhysicalRater() {
-  const [ratingResult, setRatingResult] = useState<number | null>(null);
   const [individualRatings, setIndividualRatings] = useState<{age: number, height: number, wingspan: number} | null>(null);
 
   const form = useForm<NbaProspectFormData>({
@@ -167,14 +141,10 @@ export default function NbaProspectPhysicalRater() {
         height: heightRating,
         wingspan: wingspanRating
     });
-
-    const overallRating = calculateOverallRating(data);
-    setRatingResult(overallRating);
   }
 
   const handleReset = () => {
     form.reset();
-    setRatingResult(null);
     setIndividualRatings(null);
   };
 
@@ -194,7 +164,7 @@ export default function NbaProspectPhysicalRater() {
                     Enter prospect's age (e.g., 19.75 for 19 years and 9 months; range 17-30), 
                     height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
                     Height/wingspan can include .25, .5, .75 fractions (e.g., 6'5.25").
-                    Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings for age, height, and wingspan differential.
+                    Calculates individual 1-10 ratings for age, height, and wingspan differential.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -202,7 +172,6 @@ export default function NbaProspectPhysicalRater() {
           </div>
           <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
             <RotateCcw className="h-4 w-4" />
-            <span className="sr-only">Reset Fields</span>
           </Button>
         </div>
       </CardHeader>
@@ -280,16 +249,15 @@ export default function NbaProspectPhysicalRater() {
             />
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
-            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Rating</Button>
-            {ratingResult !== null && individualRatings !== null && (
+            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Individual Ratings</Button>
+            {individualRatings !== null && (
               <>
                 <Separator />
                 <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-                  <p className="text-base text-primary-foreground mb-2">{ratingResult.toFixed(1)}/10</p>
-                  <div className="text-base text-primary-foreground space-y-1">
+                  <div className="text-base text-primary-foreground space-y-1 mb-2">
                     <p>Age Rating: {individualRatings.age.toFixed(1)}/10</p>
                     <p>Height Rating: {individualRatings.height.toFixed(1)}/10</p>
-                    <p>Wingspan Diff. Rating: {individualRatings.wingspan.toFixed(1)}/10</p>
+                    <p>Wingspan Rating: {individualRatings.wingspan.toFixed(1)}/10</p>
                   </div>
                 </div>
               </>
@@ -300,3 +268,5 @@ export default function NbaProspectPhysicalRater() {
     </Card>
   );
 }
+
+    

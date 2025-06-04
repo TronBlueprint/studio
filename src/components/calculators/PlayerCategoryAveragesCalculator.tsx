@@ -147,18 +147,11 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
     const sumOfCatAvgs = calculatedCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0);
     overallRatingValue = roundHalfUp(sumOfCatAvgs / calculatedCategoryAveragesForOverall.length, 1);
   } else {
-    // If all category averages were "N/A", overallRating should also be "N/A"
-    // This also handles the case where the input text might be structured but contains no parsable numbers for any category.
     const allCategoriesNA = categoryAverages.offense === "N/A" &&
                             categoryAverages.defense === "N/A" &&
                             categoryAverages.physicals === "N/A" &&
                             categoryAverages.summary === "N/A";
     if (allCategoriesNA) {
-        overallRatingValue = "N/A";
-    } else if (calculatedCategoryAveragesForOverall.length === 0 && !allCategoriesNA) {
-        // This case implies something went wrong if there are no numbers for overall but not all categories are N/A.
-        // However, the logic above should correctly result in "N/A" or a number.
-        // For safety, ensure it's N/A if no numbers were pushed.
         overallRatingValue = "N/A";
     }
   }
@@ -194,7 +187,11 @@ export default function PlayerCategoryAveragesCalculator() {
     const parsedData = parsePlayerAveragesData(statsInput);
 
     if (parsedData) {
-      if (parsedData.overallRating === "N/A") { 
+      if (parsedData.overallRating === "N/A" && 
+          parsedData.offense === "N/A" && 
+          parsedData.defense === "N/A" && 
+          parsedData.physicals === "N/A" && 
+          parsedData.summary === "N/A") { 
         setError("No valid numeric data found to calculate averages. Please check input.");
         return;
       }
@@ -204,7 +201,8 @@ export default function PlayerCategoryAveragesCalculator() {
     }
   }, [statsInput]);
   
-  const formatDisplayValue = (value: number | string) => {
+  const formatDisplayValue = (value: number | string | undefined) => {
+    if (value === undefined) return "N/A";
     if (typeof value === 'number') {
       return value.toFixed(1); 
     }
@@ -243,7 +241,6 @@ export default function PlayerCategoryAveragesCalculator() {
           </div>
           <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
             <RotateCcw className="h-4 w-4" />
-            <span className="sr-only">Reset Fields</span>
           </Button>
         </div>
       </CardHeader>
@@ -256,7 +253,7 @@ export default function PlayerCategoryAveragesCalculator() {
             onChange={(e) => setStatsInput(e.target.value)}
             placeholder={placeholderText}
             rows={15}
-            className="font-code mt-1 text-xs"
+            className="font-code mt-1 text-xs resize-y"
           />
         </div>
         {error && (
@@ -291,3 +288,4 @@ export default function PlayerCategoryAveragesCalculator() {
   );
 }
 
+    
