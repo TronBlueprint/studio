@@ -8,11 +8,12 @@
     --background: 240 14% 97%; /* #F8F8FA */
     --foreground: 240 10% 15%; /* Darker gray for good contrast on glass */
 
-    /* Glass surfaces - aiming for rgba(255,255,255,0.3 to 0.4) on light */
-    --card: 0 0% 100% / 0.3; /* base: rgba(255,255,255,0.3) */
+    /* Glass surfaces */
+    --card: 0 0% 100% / 0.3; /* base: rgba(255,255,255,0.3) - Card background */
     --card-foreground: 240 10% 15%;
 
-    --popover: 0 0% 100% / 0.4; /* base: rgba(255,255,255,0.4) */
+    /* Updated Popover for better readability - more opaque */
+    --popover: 0 0% 98% / 0.9; /* Almost opaque very light gray for light mode */
     --popover-foreground: 240 10% 15%;
 
     --primary: 230 50% 48%; /* #3F51B5 - Kept for text, icons, accents */
@@ -30,12 +31,12 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Glass borders - aiming for rgba(255,255,255,0.2 to 0.3) on light */
-    --border: 0 0% 100% / 0.2; /* base: rgba(255,255,255,0.2) */
+    /* Glass borders */
+    --border: 0 0% 100% / 0.2; /* base: rgba(255,255,255,0.2) for cards */
     --input: 0 0% 100% / 0.18; /* base: rgba(255,255,255,0.18) for inputs */
     
-    /* Neutral gray focus ring */
-    --ring: 220 10% 90%; /* Very light neutral gray for light mode */
+    /* Ring for focus, now neutral and to be removed from inputs */
+    --ring: 220 10% 90%; /* This will be effectively unused by inputs */
 
     --radius: 1.25rem; /* Default border radius for cards, etc. */
 
@@ -46,25 +47,26 @@
     --chart-5: 27 87% 67%;
 
     /* Sidebar specific colors - can be themed independently */
-    --sidebar-background: 230 25% 96%; /* Slightly off-white for sidebar itself */
+    --sidebar-background: 230 25% 96%; 
     --sidebar-foreground: 240 8% 25%;
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: var(--primary-foreground);
-    --sidebar-accent: 230 40% 92%; /* Lighter accent for sidebar hover */
+    --sidebar-accent: 230 40% 92%; 
     --sidebar-accent-foreground: var(--primary);
     --sidebar-border: 230 20% 88%;
     --sidebar-ring: var(--ring);
   }
 
   .dark {
-    --background: 230 20% 10%; /* Darker background for dark mode */
-    --foreground: 227 30% 85%; /* Lighter text */
+    --background: 230 20% 10%; 
+    --foreground: 227 30% 85%; 
 
-    /* Glass surfaces in dark mode - aiming for rgba(0,0,0,0.3 to 0.4) */
-    --card: 0 0% 0% / 0.3; /* base: rgba(0,0,0,0.3) */
+    /* Glass surfaces in dark mode */
+    --card: 0 0% 0% / 0.3; 
     --card-foreground: 227 30% 85%;
 
-    --popover: 0 0% 0% / 0.4; /* base: rgba(0,0,0,0.4) */
+    /* Updated Popover for better readability - more opaque */
+    --popover: 240 4% 12% / 0.9; /* Almost opaque very dark gray for dark mode */
     --popover-foreground: 227 30% 85%;
 
     --primary: 230 60% 65%;
@@ -82,34 +84,29 @@
     --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Glass borders in dark mode - aiming for rgba(255,255,255,0.1 to 0.15) */
-    --border: 0 0% 100% / 0.1; /* base: rgba(255,255,255,0.1) */
-    --input: 0 0% 0% / 0.18; /* base: rgba(0,0,0,0.18) for inputs */
+    /* Glass borders in dark mode */
+    --border: 0 0% 100% / 0.1; 
+    --input: 0 0% 0% / 0.18; 
     
-    /* Neutral gray focus ring for dark mode */
-    --ring: 220 10% 40%; /* Medium-light neutral gray for dark mode */
+    /* Ring for focus, now neutral and to be removed from inputs */
+    --ring: 220 10% 40%; /* This will be effectively unused by inputs */
 
     /* Sidebar specific colors - dark theme */
     --sidebar-background: 230 20% 12%;
     --sidebar-foreground: 227 25% 75%;
     --sidebar-accent: 230 20% 20%;
-    --sidebar-accent-foreground: var(--primary); /* Lighter primary for text on accent */
+    --sidebar-accent-foreground: var(--primary); 
     --sidebar-border: 230 15% 25%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border; /* Default border color from theme */
+    @apply border-border; 
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
     min-height: 100vh;
-    overflow-x: hidden; /* Prevent horizontal scroll from large blurred elements */
+    overflow-x: hidden; 
   }
-}
-
-/* Custom utility for frosted glass effect if needed, though direct application is preferred */
-.frosted-glass {
-  @apply bg-white/30 dark:bg-black/30 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-glass-soft;
 }
