@@ -10,23 +10,22 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center pt-8 pb-12 md:pb-16 px-4 selection:bg-primary/20 selection:text-primary">
       {/* Header removed */}
 
-      <Tabs defaultValue="athleticism" className="w-full max-w-3xl mt-8 md:mt-12"> {/* Increased max-width for more space and added top margin */}
+      <Tabs defaultValue="athleticism" className="w-full max-w-3xl mt-8 md:mt-12">
         <TabsList className="grid w-full grid-cols-3 h-auto mb-4">
           <TabsTrigger value="athleticism">Athleticism %</TabsTrigger>
           <TabsTrigger value="nba-prospect">Physical Rater</TabsTrigger>
           <TabsTrigger value="player-averages">Player Averages</TabsTrigger>
         </TabsList>
-        <div className="p-0"> {/* Removed padding here, Card will have its own */}
-          <TabsContent value="athleticism" className="mt-0" forceMount>
-            <AthletcismPercentileCalculator />
-          </TabsContent>
-          <TabsContent value="nba-prospect" className="mt-0" forceMount>
-            <NbaProspectPhysicalRater />
-          </TabsContent>
-          <TabsContent value="player-averages" className="mt-0" forceMount>
-            <PlayerCategoryAveragesCalculator />
-          </TabsContent>
-        </div>
+        {/* The intermediate div has been removed. TabsContent are now direct children. */}
+        <TabsContent value="athleticism" className="mt-0" forceMount>
+          <AthletcismPercentileCalculator />
+        </TabsContent>
+        <TabsContent value="nba-prospect" className="mt-0" forceMount>
+          <NbaProspectPhysicalRater />
+        </TabsContent>
+        <TabsContent value="player-averages" className="mt-0" forceMount>
+          <PlayerCategoryAveragesCalculator />
+        </TabsContent>
       </Tabs>
 
       <footer className="mt-20 md:mt-24 text-center text-sm text-muted-foreground">
