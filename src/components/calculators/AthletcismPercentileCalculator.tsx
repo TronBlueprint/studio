@@ -116,13 +116,13 @@ export default function AthletcismPercentileCalculator() {
             {percentileResult !== null && individualPercentiles !== null && (
               <>
                 <Separator />
-                <div className="text-center p-4 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-                  <h3 className="text-lg font-semibold text-accent-foreground">Overall Athleticism Percentile</h3>
-                  <p className="text-3xl font-bold text-accent">{percentileResult.toFixed(2)}%</p>
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    <p>Speed: {individualPercentiles.speed.toFixed(2)}%</p>
-                    <p>Agility: {individualPercentiles.agility.toFixed(2)}%</p>
-                    <p>Vertical: {individualPercentiles.vertical.toFixed(2)}%</p>
+                <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
+                  <h3 className="text-base font-medium text-primary-foreground/80 mb-1">Overall Athleticism Percentile</h3>
+                  <p className="text-3xl font-bold text-primary-foreground mb-4">{percentileResult.toFixed(2)}%</p>
+                  <div className="text-sm text-primary-foreground/70 space-y-1">
+                    <p><span className="font-medium">Speed:</span> {individualPercentiles.speed.toFixed(2)}%</p>
+                    <p><span className="font-medium">Agility:</span> {individualPercentiles.agility.toFixed(2)}%</p>
+                    <p><span className="font-medium">Vertical:</span> {individualPercentiles.vertical.toFixed(2)}%</p>
                   </div>
                 </div>
               </>

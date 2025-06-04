@@ -6,8 +6,8 @@ import PlayerCategoryAveragesCalculator from "@/components/calculators/PlayerCat
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center py-12 md:py-16 px-4 selection:bg-primary/20 selection:text-primary">
-      <header className="mb-12 md:mb-16 text-center">
+    <div className="min-h-screen flex flex-col items-center pt-8 pb-12 md:pb-16 px-4 selection:bg-primary/20 selection:text-primary">
+      <header className="mb-8 md:mb-12 text-center">
         <h1 className="text-5xl md:text-6xl font-headline font-extrabold text-primary tracking-tight">
           Zenith
         </h1>

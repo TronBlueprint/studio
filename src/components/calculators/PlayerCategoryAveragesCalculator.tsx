@@ -249,18 +249,18 @@ export default function PlayerCategoryAveragesCalculator() {
         {averages && (
           <>
             <Separator />
-            <div className="text-left p-4 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-              <h3 className="text-lg font-semibold text-accent-foreground mb-2 text-center">
+            <div className="p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
+              <h3 className="text-base font-medium text-primary-foreground/80 mb-2 text-center">
                 Calculated Averages
               </h3>
-              <p className="text-2xl font-bold text-accent text-center mb-3">
+              <p className="text-3xl font-bold text-primary-foreground text-center mb-4">
                 Overall Rating: {formatDisplayValue(averages.overallRating)}
               </p>
-              <ul className="space-y-1 list-none pl-0 md:columns-2">
-                <li><strong>Offense Avg:</strong> {formatDisplayValue(averages.offense)}</li>
-                <li><strong>Defense Avg:</strong> {formatDisplayValue(averages.defense)}</li>
-                <li><strong>Physicals Avg:</strong> {formatDisplayValue(averages.physicals)}</li>
-                <li><strong>Summary Avg:</strong> {formatDisplayValue(averages.summary)}</li>
+              <ul className="text-sm text-primary-foreground/70 space-y-1 list-none pl-0 md:columns-2">
+                <li><span className="font-medium">Offense Avg:</span> {formatDisplayValue(averages.offense)}</li>
+                <li><span className="font-medium">Defense Avg:</span> {formatDisplayValue(averages.defense)}</li>
+                <li><span className="font-medium">Physicals Avg:</span> {formatDisplayValue(averages.physicals)}</li>
+                <li><span className="font-medium">Summary Avg:</span> {formatDisplayValue(averages.summary)}</li>
               </ul>
             </div>
           </>

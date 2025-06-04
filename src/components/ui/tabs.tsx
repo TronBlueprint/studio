@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import * as TabsPrimitive from "@radix-ui/react-tabs"
+import *as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
 
@@ -32,7 +32,7 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       // Base styles for all triggers (inactive and active)
       "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-[background-color,border-color,color,box-shadow,padding] duration-200 ease-in-out",
-      "outline-0 focus:outline-none focus-visible:outline-none", // Ensuring no outline
+      "outline-0", // Use outline-0 to set outline-width: 0px
       "disabled:pointer-events-none disabled:opacity-50",
       // Inactive state specific styling
       "px-3 py-2 text-muted-foreground", // Default padding for inactive

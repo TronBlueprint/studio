@@ -272,13 +272,13 @@ export default function NbaProspectPhysicalRater() {
             {ratingResult !== null && individualRatings !== null && (
               <>
                 <Separator />
-                <div className="text-center p-4 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-                  <h3 className="text-lg font-semibold text-accent-foreground">Overall Physical Rating</h3>
-                  <p className="text-3xl font-bold text-accent">{ratingResult.toFixed(1)}/10</p>
-                  <div className="mt-3 text-sm text-muted-foreground space-y-1">
-                    <p>Age Rating: {individualRatings.age.toFixed(1)}/10</p>
-                    <p>Height Rating: {individualRatings.height.toFixed(1)}/10</p>
-                    <p>Wingspan Diff. Rating: {individualRatings.wingspan.toFixed(1)}/10</p>
+                <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
+                  <h3 className="text-base font-medium text-primary-foreground/80 mb-1">Overall Physical Rating</h3>
+                  <p className="text-3xl font-bold text-primary-foreground mb-4">{ratingResult.toFixed(1)}/10</p>
+                  <div className="text-sm text-primary-foreground/70 space-y-1">
+                    <p><span className="font-medium">Age Rating:</span> {individualRatings.age.toFixed(1)}/10</p>
+                    <p><span className="font-medium">Height Rating:</span> {individualRatings.height.toFixed(1)}/10</p>
+                    <p><span className="font-medium">Wingspan Diff. Rating:</span> {individualRatings.wingspan.toFixed(1)}/10</p>
                   </div>
                 </div>
               </>
