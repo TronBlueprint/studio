@@ -116,39 +116,41 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   }
 
   const categoryAverages: Partial<PlayerAverages> = {};
-  const validCategoryAveragesForOverall: number[] = [];
-
+  
   for (const catName of Object.keys(CATEGORY_KEYS_PLAYER_AVG) as Array<keyof typeof CATEGORY_KEYS_PLAYER_AVG>) {
     const valuesList = categoriesData[catName];
     if (valuesList && valuesList.length > 0) {
       const average = valuesList.reduce((sum, val) => sum + val, 0) / valuesList.length;
       const roundedAverage = roundHalfUp(average, 1);
       categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = roundedAverage;
-      if (catName !== "Summary") { 
-        validCategoryAveragesForOverall.push(roundedAverage);
-      }
     } else {
       categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = "N/A"; 
     }
   }
   
-  let overallRatingValue: number | string = 0; 
-  if (validCategoryAveragesForOverall.length > 0) {
-    overallRatingValue = roundHalfUp(validCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0) / validCategoryAveragesForOverall.length, 1);
-  } else if (Object.values(categoriesData).some(arr => arr.length > 0)) {
-     overallRatingValue = 0; 
-  } else {
-     overallRatingValue = "N/A"; 
+  const allCalculatedCategoryAveragesNumbers: number[] = [];
+  if (typeof categoryAverages.offense === 'number') {
+    allCalculatedCategoryAveragesNumbers.push(categoryAverages.offense);
   }
-  
-  const finalOverallRating = typeof overallRatingValue === 'number' 
-    ? overallRatingValue 
-    : (Object.values(categoriesData).some(arr => arr.length > 0) ? 0.0 : "N/A");
+  if (typeof categoryAverages.defense === 'number') {
+    allCalculatedCategoryAveragesNumbers.push(categoryAverages.defense);
+  }
+  if (typeof categoryAverages.physicals === 'number') {
+    allCalculatedCategoryAveragesNumbers.push(categoryAverages.physicals);
+  }
+  if (typeof categoryAverages.summary === 'number') { // Include Summary average for overall calculation
+    allCalculatedCategoryAveragesNumbers.push(categoryAverages.summary);
+  }
 
+  let overallRatingValue: number | string = "N/A";
+  if (allCalculatedCategoryAveragesNumbers.length > 0) {
+    const sumOfCatAvgs = allCalculatedCategoryAveragesNumbers.reduce((sum, val) => sum + val, 0);
+    overallRatingValue = roundHalfUp(sumOfCatAvgs / allCalculatedCategoryAveragesNumbers.length, 1);
+  }
 
   return {
     playerName: playerName, 
-    overallRating: finalOverallRating,
+    overallRating: overallRatingValue,
     offense: categoryAverages.offense ?? "N/A",
     defense: categoryAverages.defense ?? "N/A",
     physicals: categoryAverages.physicals ?? "N/A",
@@ -178,13 +180,15 @@ export default function PlayerCategoryAveragesCalculator() {
     if (parsedData) {
       const allPrimaryNA = parsedData.offense === "N/A" && parsedData.defense === "N/A" && parsedData.physicals === "N/A";
       
-      if (parsedData.overallRating === 0 && allPrimaryNA && parsedData.summary === "N/A") {
-         setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
-         return;
-      }
+      // Check if overall rating is N/A directly after parsing (if no numeric data at all for categories)
        if (parsedData.overallRating === "N/A") { 
         setError("No valid numeric data found to calculate averages. Please check input.");
         return;
+      }
+      // This check might be redundant if overallRating === "N/A" already caught it.
+      if (parsedData.overallRating === 0 && allPrimaryNA && parsedData.summary === "N/A") {
+         setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
+         return;
       }
       setAverages(parsedData);
     } else {
@@ -210,7 +214,7 @@ export default function PlayerCategoryAveragesCalculator() {
       <CardHeader className="pb-2 md:pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="font-headline">Player Category Averages</CardTitle>
+            <CardTitle>Player Category Averages</CardTitle>
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
@@ -223,7 +227,7 @@ export default function PlayerCategoryAveragesCalculator() {
                     Numeric ratings (e.g., 8 or 7.5) are averaged for each category.
                     For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: ` + "`Key: Raw Value | Numeric Rating`" + ` (e.g., ` + "`Age: 19.51 | 9`" + `). 
                     The value after " | " (space on both sides of the pipe) is used for calculation.
-                    The tool calculates category averages and an overall rating, rounded to one decimal place.
+                    The tool calculates category averages and an overall rating (from the 4 category averages), rounded to one decimal place.
                   </p>
                 </TooltipContent>
               </Tooltip>

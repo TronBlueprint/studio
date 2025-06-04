@@ -57,7 +57,7 @@ export default function AthletcismPercentileCalculator() {
       <CardHeader className="pb-2 md:pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
+            <CardTitle>Athleticism Percentile</CardTitle>
             <TooltipProvider>
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
@@ -130,7 +130,7 @@ export default function AthletcismPercentileCalculator() {
               <>
                 <Separator />
                 <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-                  <p className="text-base text-primary-foreground mb-2">{percentileResult.toFixed(2)}%</p>
+                  <p className="text-base text-primary-foreground mb-2">Overall Percentile: {percentileResult.toFixed(2)}%</p>
                   <div className="text-base text-primary-foreground space-y-1">
                     <p>Speed: {individualPercentiles.speed.toFixed(2)}%</p>
                     <p>Agility: {individualPercentiles.agility.toFixed(2)}%</p>
