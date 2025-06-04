@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -14,7 +15,8 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-auto items-center justify-center rounded-xl bg-white/20 dark:bg-black/20 backdrop-blur-sm p-1.5 text-muted-foreground shadow-md", // Glass effect for tab list
+      "inline-flex h-auto items-center justify-center rounded-xl p-1.5 text-muted-foreground", // Adjusted padding if necessary
+      "bg-white/25 dark:bg-black/25 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-glass-soft", // Enhanced glass effect
       className
     )}
     {...props}
@@ -30,8 +32,10 @@ const TabsTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-      "data-[state=active]:bg-white/40 dark:data-[state=active]:bg-white/10 data-[state=active]:text-primary data-[state=active]:shadow-glass data-[state=active]:backdrop-blur-md", // Active state glass effect
-      "hover:bg-white/10 dark:hover:bg-black/10",
+      // Active state: more pronounced glass
+      "data-[state=active]:bg-white/40 dark:data-[state=active]:bg-black/30 data-[state=active]:text-primary data-[state=active]:shadow-glass-soft data-[state=active]:backdrop-blur-xl",
+      // Inactive hover state
+      "hover:bg-white/15 dark:hover:bg-black/15 hover:text-foreground/80",
       className
     )}
     {...props}
@@ -47,7 +51,7 @@ const TabsContent = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className // Cards within content will have their own glass styling
+      className
     )}
     {...props}
   />
@@ -55,3 +59,4 @@ const TabsContent = React.forwardRef<
 TabsContent.displayName = TabsPrimitive.Content.displayName
 
 export { Tabs, TabsList, TabsTrigger, TabsContent }
+
