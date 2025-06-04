@@ -67,9 +67,20 @@ export default {
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        // More generous rounding
+        'sm': '0.5rem', // formerly calc(var(--radius) - 4px)
+        'DEFAULT': '0.75rem', // default for non-specified, was md
+        'md': '0.75rem', // formerly calc(var(--radius) - 2px)
+        'lg': '1rem',    // formerly var(--radius)
+        'xl': '1.25rem',
+        '2xl': '1.5rem',
+        '3xl': '2rem',
+        'full': '9999px',
+      },
+      boxShadow: {
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)', // Softer, more diffused shadow
+        'glass-lg': '0 10px 35px 0 rgba(31, 38, 135, 0.1)',
+        'glass-xl': '0 15px 45px 0 rgba(31, 38, 135, 0.12)',
       },
       keyframes: {
         'accordion-down': {
