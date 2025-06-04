@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -10,14 +11,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 
+// calculatePercentile remains the same as it correctly handles inversion and clamping based on its inputs.
+// The logic changes will be in how it's called (new min/max values and inversion flags).
 const calculatePercentile = (value: number, min: number, max: number, inverted: boolean = false): number => {
   if (min === max) return 50; // Avoid division by zero, return mid-percentile
-  const score = inverted ? (max - value) / (max - min) : (value - min) / (max - min);
+  
+  // Clamp value to min/max range before calculation
+  const clampedValue = Math.max(min, Math.min(max, value));
+
+  const score = inverted ? (max - clampedValue) / (max - min) : (clampedValue - min) / (max - min);
   return Math.max(0, Math.min(100, score * 100));
 };
 
 export default function AthletcismPercentileCalculator() {
   const [percentileResult, setPercentileResult] = useState<number | null>(null);
+  const [individualPercentiles, setIndividualPercentiles] = useState<{speed: number, agility: number, vertical: number} | null>(null);
 
   const form = useForm<AthleticismFormData>({
     resolver: zodResolver(AthleticismSchema),
@@ -29,12 +37,18 @@ export default function AthletcismPercentileCalculator() {
   });
 
   function onSubmit(data: AthleticismFormData) {
-    const speedPercentile = calculatePercentile(data.speed, 4.2, 6.0, true);
-    const agilityPercentile = calculatePercentile(data.agility, 3.8, 5.0, true);
-    const verticalPercentile = calculatePercentile(data.vertical, 20, 45);
+    // Ranges from Python code: Speed (45-95, lower is better), Agility (45-95, lower is better), Vertical (50-99, higher is better)
+    const speedPercentile = calculatePercentile(data.speed, 45, 95, true); // true for inverted because lower speed score is better
+    const agilityPercentile = calculatePercentile(data.agility, 45, 95, true); // true for inverted because lower agility score is better
+    const verticalPercentile = calculatePercentile(data.vertical, 50, 99, false); // false for inverted because higher vertical score is better
 
     const overallPercentile = (speedPercentile + agilityPercentile + verticalPercentile) / 3;
     setPercentileResult(overallPercentile);
+    setIndividualPercentiles({
+      speed: speedPercentile,
+      agility: agilityPercentile,
+      vertical: verticalPercentile
+    });
   }
 
   return (
@@ -42,7 +56,8 @@ export default function AthletcismPercentileCalculator() {
       <CardHeader>
         <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
         <CardDescription>
-          Input speed, agility, and vertical jump to calculate overall athleticism percentile.
+          Input scores for speed, agility, and vertical jump to calculate overall athleticism percentile.
+          Lower scores are better for Speed and Agility. Higher scores are better for Vertical.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -53,9 +68,9 @@ export default function AthletcismPercentileCalculator() {
               name="speed"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Speed (40-yard dash, seconds)</FormLabel>
+                  <FormLabel>Speed Score (45-95)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" placeholder="e.g., 4.50" {...field} />
+                    <Input type="number" step="1" placeholder="e.g., 80 (lower is better)" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -66,9 +81,9 @@ export default function AthletcismPercentileCalculator() {
               name="agility"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Agility (shuttle run, seconds)</FormLabel>
+                  <FormLabel>Agility Score (45-95)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" placeholder="e.g., 4.00" {...field} />
+                    <Input type="number" step="1" placeholder="e.g., 75 (lower is better)" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -79,9 +94,9 @@ export default function AthletcismPercentileCalculator() {
               name="vertical"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Vertical (jump height, inches)</FormLabel>
+                  <FormLabel>Vertical Score (50-99)</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.1" placeholder="e.g., 30" {...field} />
+                    <Input type="number" step="1" placeholder="e.g., 85 (higher is better)" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -90,12 +105,17 @@ export default function AthletcismPercentileCalculator() {
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
             <Button type="submit" className="w-full bg-primary hover:bg-primary/90">Calculate Percentile</Button>
-            {percentileResult !== null && (
+            {percentileResult !== null && individualPercentiles !== null && (
               <>
                 <Separator />
-                <div className="text-center p-4 bg-accent/10 rounded-md">
+                <div className="text-center p-4 bg-accent/10 rounded-md w-full">
                   <h3 className="text-lg font-semibold text-accent-foreground">Overall Athleticism Percentile</h3>
                   <p className="text-3xl font-bold text-accent">{percentileResult.toFixed(1)}th</p>
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    <p>Speed: {individualPercentiles.speed.toFixed(1)}%</p>
+                    <p>Agility: {individualPercentiles.agility.toFixed(1)}%</p>
+                    <p>Vertical: {individualPercentiles.vertical.toFixed(1)}%</p>
+                  </div>
                 </div>
               </>
             )}
