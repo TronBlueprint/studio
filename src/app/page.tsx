@@ -17,13 +17,13 @@ export default function Home() {
           <TabsTrigger value="player-averages">Player Averages</TabsTrigger>
         </TabsList>
         <div className="p-0"> {/* Removed padding here, Card will have its own */}
-          <TabsContent value="athleticism" className="mt-0">
+          <TabsContent value="athleticism" className="mt-0" forceMount>
             <AthletcismPercentileCalculator />
           </TabsContent>
-          <TabsContent value="nba-prospect" className="mt-0">
+          <TabsContent value="nba-prospect" className="mt-0" forceMount>
             <NbaProspectPhysicalRater />
           </TabsContent>
-          <TabsContent value="player-averages" className="mt-0">
+          <TabsContent value="player-averages" className="mt-0" forceMount>
             <PlayerCategoryAveragesCalculator />
           </TabsContent>
         </div>
@@ -36,4 +36,3 @@ export default function Home() {
     </div>
   );
 }
-
