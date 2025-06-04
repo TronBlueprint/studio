@@ -27,10 +27,10 @@ Interior: [Numeric Value]
 Playmaking: [Numeric Value]
 
 ###### Physicals:
-Athleticism: [Numeric Value]
-Age: [Numeric Value (as a rating, not raw age)]
-Height: [Numeric Value (as a rating)]
-Wingspan: [Numeric Value (as a rating)]
+Athleticism: [Numeric Value (Rating 1-10)]
+Age: [Numeric Value (Rating 1-10, not raw age)]
+Height: [Numeric Value (Rating 1-10, not raw height)]
+Wingspan: [Numeric Value (Rating 1-10, not raw wingspan)]
 
 ###### Summary:
 NBA Ready: [Numeric Value]
@@ -40,8 +40,9 @@ Potential Max: [Numeric Value]
 `;
 
 function roundHalfUp(num: number, decimals: number = 1): number {
-  if (isNaN(num)) return num;
+  if (isNaN(num) || typeof num !== 'number') return num; // Return original if not a valid number
   const multiplier = Math.pow(10, decimals);
+  // Using Math.round for typical rounding behavior (0.5 rounds up)
   return Math.round(num * multiplier) / multiplier;
 }
 
@@ -57,7 +58,6 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
   for (const line of lines) {
     if (line.startsWith("#### ")) {
-      // Extracts player name, removing "#### " and the first colon if present, then trims.
       let namePart = line.substring("#### ".length);
       const colonIndex = namePart.indexOf(":");
       if (colonIndex !== -1) {
@@ -66,11 +66,8 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
         playerName = namePart.trim();
       }
       if (playerName === "[Enter Player Name Here]") playerName = "Unknown Player";
-
-
     } else if (line.startsWith("###### ")) {
       let categoryHeader = line.substring("###### ".length).trim();
-      // Extract the part before the first colon or space to get the category name
       categoryHeader = categoryHeader.split(/[:\s]/, 1)[0]; 
       if (categoryHeader in CATEGORY_KEYS_PLAYER_AVG) {
         currentCategoryName = categoryHeader as keyof typeof CATEGORY_KEYS_PLAYER_AVG;
@@ -78,7 +75,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
         currentCategoryName = null;
       }
     } else if (currentCategoryName && line.includes(":")) {
-      const parts = line.split(":", 2); // Split only on the first colon
+      const parts = line.split(":", 2); 
       const keyPartRaw = parts[0].trim().replace(/[*_~]/g, "").replace(/:$/, "");
       const valuePartRaw = parts[1].trim();
 
@@ -87,18 +84,13 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
         if (currentCategoryName === "Physicals" && valuePartRaw.includes("|")) {
             const valueSegments = valuePartRaw.split("|");
-            stringToParseForNumber = valueSegments[valueSegments.length - 1].trim(); // Take segment after the last pipe
+            stringToParseForNumber = valueSegments[valueSegments.length - 1].trim();
         } else {
-            // For non-Physicals categories, or Physicals without a pipe,
-            // take the part before the first pipe (if any).
             stringToParseForNumber = valuePartRaw.split("|", 1)[0].trim();
         }
         
-        // Clean common markdown characters from the string to be parsed
         stringToParseForNumber = stringToParseForNumber.replace(/[*_~]/g, "");
-        // Attempt to remove common non-numeric annotations like (rating), e.g. "8.5 (rating)" -> "8.5"
         stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim();
-
 
         try {
           const numericValue = parseFloat(stringToParseForNumber);
@@ -129,25 +121,22 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
     }
   }
   
-  let overallRating = 0;
+  let overallRatingValue: number | string = 0;
   if (validCategoryAveragesForOverall.length > 0) {
-    overallRating = roundHalfUp(validCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0) / validCategoryAveragesForOverall.length, 1);
+    overallRatingValue = roundHalfUp(validCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0) / validCategoryAveragesForOverall.length, 1);
   } else if (Object.values(categoriesData).some(arr => arr.length > 0)) {
-     overallRating = 0; 
+     overallRatingValue = 0; 
   } else {
-    return {
-      playerName,
-      overallRating: 0,
-      offense: categoryAverages.offense ?? "N/A",
-      defense: categoryAverages.defense ?? "N/A",
-      physicals: categoryAverages.physicals ?? "N/A",
-      summary: categoryAverages.summary ?? "N/A",
-    };
+     overallRatingValue = "N/A"; // If no data at all
   }
+  
+  // Ensure consistent "N/A" or numeric type before returning
+  const finalOverallRating = typeof overallRatingValue === 'number' ? overallRatingValue : (Object.values(categoriesData).some(arr => arr.length > 0) ? 0 : "N/A");
+
 
   return {
-    playerName,
-    overallRating,
+    playerName, // Still parsed for potential internal use, but not displayed directly in header
+    overallRating: finalOverallRating,
     offense: categoryAverages.offense ?? "N/A",
     defense: categoryAverages.defense ?? "N/A",
     physicals: categoryAverages.physicals ?? "N/A",
@@ -180,10 +169,21 @@ export default function PlayerCategoryAveragesCalculator() {
          setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
          return;
       }
+       if (parsedData.overallRating === "N/A" && allNA) {
+        setError("No valid numeric data found to calculate averages. Please check input.");
+        return;
+      }
       setAverages(parsedData);
     } else {
       setError("Error parsing data. Please check input format and values. Ensure numeric values are provided for ratings.");
     }
+  };
+  
+  const formatDisplayValue = (value: number | string) => {
+    if (typeof value === 'number') {
+      return value.toFixed(1);
+    }
+    return value; // Should be "N/A"
   };
 
   return (
@@ -191,7 +191,9 @@ export default function PlayerCategoryAveragesCalculator() {
       <CardHeader>
         <CardTitle className="font-headline">Player Category Averages</CardTitle>
         <CardDescription>
-          Paste player report data (structured as shown in placeholder) to calculate category averages and overall rating.
+          Paste player report data using the structured format shown in the placeholder.
+          This tool calculates category averages and an overall rating.
+          For "Physicals", ensure Age, Height, and Wingspan are input as ratings (e.g., 1-10), not raw measurements.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -222,16 +224,16 @@ export default function PlayerCategoryAveragesCalculator() {
             <Separator />
             <div className="text-left p-4 bg-accent/10 rounded-md w-full">
               <h3 className="text-lg font-semibold text-accent-foreground mb-2 text-center">
-                Averages for: {averages.playerName}
+                Calculated Averages
               </h3>
               <p className="text-2xl font-bold text-accent text-center mb-3">
-                Overall Rating: {averages.overallRating}
+                Overall Rating: {formatDisplayValue(averages.overallRating)}
               </p>
               <ul className="space-y-1 list-none pl-0 md:columns-2">
-                <li><strong>Offense Avg:</strong> {averages.offense}</li>
-                <li><strong>Defense Avg:</strong> {averages.defense}</li>
-                <li><strong>Physicals Avg:</strong> {averages.physicals}</li>
-                <li><strong>Summary Fields Avg:</strong> {averages.summary}</li>
+                <li><strong>Offense Avg:</strong> {formatDisplayValue(averages.offense)}</li>
+                <li><strong>Defense Avg:</strong> {formatDisplayValue(averages.defense)}</li>
+                <li><strong>Physicals Avg:</strong> {formatDisplayValue(averages.physicals)}</li>
+                <li><strong>Summary Avg:</strong> {formatDisplayValue(averages.summary)}</li>
               </ul>
             </div>
           </>
@@ -240,3 +242,4 @@ export default function PlayerCategoryAveragesCalculator() {
     </Card>
   );
 }
+
