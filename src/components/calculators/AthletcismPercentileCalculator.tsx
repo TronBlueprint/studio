@@ -11,8 +11,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 
-// calculatePercentile remains the same as it correctly handles inversion and clamping based on its inputs.
-// The logic changes will be in how it's called (new min/max values and inversion flags).
+// calculatePercentile matches the Python version when inverted is false.
+// Python: (value - min_val) / (max_val - min_val) * 100
+// TS (inverted=false): (clampedValue - min) / (max - min) * 100
 const calculatePercentile = (value: number, min: number, max: number, inverted: boolean = false): number => {
   if (min === max) return 50; // Avoid division by zero, return mid-percentile
   
@@ -37,10 +38,11 @@ export default function AthletcismPercentileCalculator() {
   });
 
   function onSubmit(data: AthleticismFormData) {
-    // Ranges from Python code: Speed (45-95, lower is better), Agility (45-95, lower is better), Vertical (50-99, higher is better)
-    const speedPercentile = calculatePercentile(data.speed, 45, 95, true); // true for inverted because lower speed score is better
-    const agilityPercentile = calculatePercentile(data.agility, 45, 95, true); // true for inverted because lower agility score is better
-    const verticalPercentile = calculatePercentile(data.vertical, 50, 99, false); // false for inverted because higher vertical score is better
+    // Per user's Python code, calculations are not inverted for speed/agility.
+    // Speed (45-95), Agility (45-95), Vertical (50-99)
+    const speedPercentile = calculatePercentile(data.speed, 45, 95, false); 
+    const agilityPercentile = calculatePercentile(data.agility, 45, 95, false);
+    const verticalPercentile = calculatePercentile(data.vertical, 50, 99, false);
 
     const overallPercentile = (speedPercentile + agilityPercentile + verticalPercentile) / 3;
     setPercentileResult(overallPercentile);
@@ -110,11 +112,11 @@ export default function AthletcismPercentileCalculator() {
                 <Separator />
                 <div className="text-center p-4 bg-accent/10 rounded-md w-full">
                   <h3 className="text-lg font-semibold text-accent-foreground">Overall Athleticism Percentile</h3>
-                  <p className="text-3xl font-bold text-accent">{percentileResult.toFixed(1)}th</p>
+                  <p className="text-3xl font-bold text-accent">{percentileResult.toFixed(2)}%</p>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    <p>Speed: {individualPercentiles.speed.toFixed(1)}%</p>
-                    <p>Agility: {individualPercentiles.agility.toFixed(1)}%</p>
-                    <p>Vertical: {individualPercentiles.vertical.toFixed(1)}%</p>
+                    <p>Speed: {individualPercentiles.speed.toFixed(2)}%</p>
+                    <p>Agility: {individualPercentiles.agility.toFixed(2)}%</p>
+                    <p>Vertical: {individualPercentiles.vertical.toFixed(2)}%</p>
                   </div>
                 </div>
               </>

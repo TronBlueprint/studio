@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'StatSlate - Basketball Analytics',
+  title: 'Zenith - Basketball Analytics',
   description: 'Calculators for athleticism percentiles, NBA prospect ratings, and player statistical averages.',
 };
 

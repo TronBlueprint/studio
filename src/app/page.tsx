@@ -15,7 +15,7 @@ export default function Home() {
           </svg>
         </div>
         <h1 className="text-5xl font-headline font-extrabold text-primary tracking-tight">
-          StatSlate
+          Zenith
         </h1>
         <p className="text-muted-foreground mt-3 text-lg max-w-md mx-auto">
           Your intuitive platform for basketball analytics and player evaluation.
@@ -42,7 +42,7 @@ export default function Home() {
       </Tabs>
 
       <footer className="mt-16 text-center text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} StatSlate. All calculations are for illustrative purposes.</p>
+        <p>&copy; {new Date().getFullYear()} Zenith. All calculations are for illustrative purposes.</p>
         <p>Built with passion for the game.</p>
       </footer>
     </div>
