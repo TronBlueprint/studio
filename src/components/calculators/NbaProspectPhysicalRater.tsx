@@ -148,7 +148,7 @@ export default function NbaProspectPhysicalRater() {
   const form = useForm<NbaProspectFormData>({
     resolver: zodResolver(NbaProspectSchema),
     defaultValues: {
-      age: undefined, 
+      age: '', 
       height: "", 
       wingspan: "", 
       position: undefined,
@@ -280,6 +280,7 @@ export default function NbaProspectPhysicalRater() {
               <>
                 <Separator />
                 <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
+                  
                   <p className="text-3xl font-bold text-primary-foreground mb-4">{ratingResult.toFixed(1)}/10</p>
                   <div className="text-sm text-primary-foreground/70 space-y-1">
                     <p><span className="font-medium">Age Rating:</span> {individualRatings.age.toFixed(1)}/10</p>
