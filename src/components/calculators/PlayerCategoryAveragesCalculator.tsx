@@ -199,6 +199,12 @@ export default function PlayerCategoryAveragesCalculator() {
     return value; 
   };
 
+  const handleReset = () => {
+    setStatsInput(placeholderText);
+    setAverages(null);
+    setError(null);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -246,13 +252,11 @@ export default function PlayerCategoryAveragesCalculator() {
         <Button onClick={handleCalculate} variant="primaryGlass" className="w-full">
           Calculate Averages
         </Button>
+        <Button type="button" variant="outline" className="w-full" onClick={handleReset}>Reset</Button>
         {averages && (
           <>
             <Separator />
             <div className="p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-              <h3 className="text-base font-medium text-primary-foreground/80 mb-2 text-center">
-                Calculated Averages
-              </h3>
               <p className="text-3xl font-bold text-primary-foreground text-center mb-4">
                 Overall Rating: {formatDisplayValue(averages.overallRating)}
               </p>

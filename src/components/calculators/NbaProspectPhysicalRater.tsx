@@ -172,6 +172,12 @@ export default function NbaProspectPhysicalRater() {
     setRatingResult(overallRating);
   }
 
+  const handleReset = () => {
+    form.reset();
+    setRatingResult(null);
+    setIndividualRatings(null);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -269,11 +275,11 @@ export default function NbaProspectPhysicalRater() {
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
             <Button type="submit" variant="primaryGlass" className="w-full">Calculate Rating</Button>
+            <Button type="button" variant="outline" className="w-full" onClick={handleReset}>Reset</Button>
             {ratingResult !== null && individualRatings !== null && (
               <>
                 <Separator />
                 <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-                  <h3 className="text-base font-medium text-primary-foreground/80 mb-1">Overall Physical Rating</h3>
                   <p className="text-3xl font-bold text-primary-foreground mb-4">{ratingResult.toFixed(1)}/10</p>
                   <div className="text-sm text-primary-foreground/70 space-y-1">
                     <p><span className="font-medium">Age Rating:</span> {individualRatings.age.toFixed(1)}/10</p>
