@@ -127,7 +127,7 @@ export default function NbaProspectPhysicalRater() {
       wingspan: "", 
       position: undefined,
     },
-    mode: "onChange" 
+    mode: "onSubmit" // Validate only on submit
   });
 
   function onSubmit(data: NbaProspectFormData) { 
@@ -164,7 +164,7 @@ export default function NbaProspectPhysicalRater() {
                     Enter prospect's age (e.g., 19.75 for 19 years and 9 months; range 17-30), 
                     height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
                     Height/wingspan can include .25, .5, .75 fractions (e.g., 6'5.25").
-                    Calculates individual 1-10 ratings for age, height, and wingspan differential.
+                    Calculates individual 1-10 ratings for age, height, and wingspan.
                   </p>
                 </TooltipContent>
               </Tooltip>

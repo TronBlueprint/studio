@@ -30,6 +30,7 @@ export default function AthletcismPercentileCalculator() {
       agility: '',
       vertical: '',
     },
+    mode: 'onSubmit', // Validate only on submit
   });
 
   function onSubmit(data: AthleticismFormData) {
