@@ -87,10 +87,9 @@ const SelectContent = React.forwardRef<
       ref={ref}
       className={cn(
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl text-popover-foreground shadow-glass-xl",
-        "bg-popover backdrop-blur-xl border", // Using popover variable for background
-        // Removed animation classes for instant open/close
+        "bg-popover backdrop-blur-xl border",
         position === "popper" &&
-          "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]", // Retain popper specific sizing
+          "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
         className
       )}
       position={position}
@@ -100,9 +99,8 @@ const SelectContent = React.forwardRef<
       <SelectPrimitive.Viewport
         className={cn(
           "p-1",
-          // Removed popper specific viewport class that was part of animation sizing
-          // position === "popper" &&
-          // "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
+          position === "popper" &&
+            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
       >
         {children}

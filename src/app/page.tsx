@@ -8,7 +8,7 @@ import PlayerCategoryAveragesCalculator from "@/components/calculators/PlayerCat
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center pt-8 pb-12 md:pb-16 px-4 selection:bg-primary/20 selection:text-primary">
-      {/* Header removed */}
+      
 
       <Tabs defaultValue="athleticism" className="w-full max-w-3xl mt-8 md:mt-12">
         <TabsList className="grid w-full grid-cols-3 h-auto mb-4">
@@ -16,14 +16,14 @@ export default function Home() {
           <TabsTrigger value="nba-prospect">Physical Rater</TabsTrigger>
           <TabsTrigger value="player-averages">Player Averages</TabsTrigger>
         </TabsList>
-        {/* The intermediate div has been removed. TabsContent are now direct children. */}
-        <TabsContent value="athleticism" className="mt-0" forceMount>
+        
+        <TabsContent value="athleticism" forceMount>
           <AthletcismPercentileCalculator />
         </TabsContent>
-        <TabsContent value="nba-prospect" className="mt-0" forceMount>
+        <TabsContent value="nba-prospect" forceMount>
           <NbaProspectPhysicalRater />
         </TabsContent>
-        <TabsContent value="player-averages" className="mt-0" forceMount>
+        <TabsContent value="player-averages" forceMount>
           <PlayerCategoryAveragesCalculator />
         </TabsContent>
       </Tabs>
