@@ -183,7 +183,7 @@ export default function NbaProspectPhysicalRater() {
                 <Info className="h-5 w-5 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent side="top" align="end" className="max-w-sm">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm">
                   Enter prospect's age (e.g., 19.75 for 19 years and 9 months; range 17-30), 
                   height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
                   Height/wingspan can include .25, .5, .75 fractions (e.g., 6'5.25").
@@ -195,7 +195,7 @@ export default function NbaProspectPhysicalRater() {
         </div>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="focus:outline-none">
           <CardContent className="space-y-6">
             <FormField
               control={form.control}
@@ -272,7 +272,7 @@ export default function NbaProspectPhysicalRater() {
             {ratingResult !== null && individualRatings !== null && (
               <>
                 <Separator />
-                <div className="text-center p-4 bg-accent/10 rounded-md w-full">
+                <div className="text-center p-4 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
                   <h3 className="text-lg font-semibold text-accent-foreground">Overall Physical Rating</h3>
                   <p className="text-3xl font-bold text-accent">{ratingResult.toFixed(1)}/10</p>
                   <div className="mt-3 text-sm text-muted-foreground space-y-1">

@@ -40,11 +40,8 @@ Potential Max: 9.5
 `;
 
 function roundHalfUp(num: number, decimals: number = 1): number {
-  if (isNaN(num) || typeof num !== 'number') return num; // Return original if not a valid number for rounding
+  if (isNaN(num) || typeof num !== 'number') return num; 
   const multiplier = Math.pow(10, decimals);
-  // Standard rounding: Math.round(num * multiplier + Number.EPSILON * multiplier) / multiplier;
-  // For precise control, especially financial or critical calcs, Decimal.js or similar is better.
-  // For this app, Math.round should be sufficient for display purposes.
   return Math.round(num * multiplier) / multiplier;
 }
 
@@ -61,14 +58,12 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   for (const rawLine of lines) {
     let line = rawLine; 
 
-    // Player Name Parsing (allow without colon and with optional "Player Name" prefix)
     const playerNameMatch = line.match(/^(?:Player Name\s*:?\s*)?(.*)/i);
     if (playerNameMatch && playerNameMatch[1] && !Object.keys(CATEGORY_KEYS_PLAYER_AVG).some(cat => line.toLowerCase().startsWith(cat.toLowerCase()))) {
         let nameCandidate = playerNameMatch[1].trim();
         if (nameCandidate && nameCandidate.toLowerCase() !== "sample player" && nameCandidate.toLowerCase() !== placeholderText.split('\n')[0].replace("Player Name","").trim()) {
             playerName = nameCandidate;
         }
-        // Continue if it's a player name line, unless it could also be a category start.
         if (line.toLowerCase().startsWith("player name")) continue;
     }
     
@@ -79,9 +74,9 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
         if (foundCategoryKey) {
             currentCategoryName = foundCategoryKey as keyof typeof CATEGORY_KEYS_PLAYER_AVG;
         } else {
-            currentCategoryName = null; // Should not happen if regex is correct
+            currentCategoryName = null; 
         }
-        continue; // This line was a category header
+        continue; 
     }
 
 
@@ -95,26 +90,22 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
         let stringToParseForNumber: string;
 
         if (currentCategoryName === "Physicals" && (keyPartRaw === "Age" || keyPartRaw === "Height" || keyPartRaw === "Wingspan")) {
-            // Expect "Raw Value | Rating" format. Take the part after the LAST pipe.
             const valueSegments = valuePartRaw.split(/\s*\|\s*/); 
             if (valueSegments.length > 1) {
                 stringToParseForNumber = valueSegments[valueSegments.length - 1].trim();
             } else {
-                // If no pipe, try to parse the whole thing, but it might be an error for these fields.
-                // For now, let's assume it's an error or just the rating was provided.
                 stringToParseForNumber = valueSegments[0].trim(); 
             }
         } else {
-            // For other categories, take the part before the first pipe if it exists.
             stringToParseForNumber = valuePartRaw.split("|", 1)[0].trim();
         }
         
         stringToParseForNumber = stringToParseForNumber.replace(/[*_~]/g, "");
-        stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim(); // Remove trailing comments in parentheses
+        stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim(); 
 
         try {
           const numericValue = parseFloat(stringToParseForNumber);
-          if (!isNaN(numericValue) && numericValue >= 0) { // Ensure it's a non-negative number
+          if (!isNaN(numericValue) && numericValue >= 0) { 
             categoriesData[currentCategoryName].push(numericValue);
           }
         } catch (e) {
@@ -133,22 +124,20 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
       const average = valuesList.reduce((sum, val) => sum + val, 0) / valuesList.length;
       const roundedAverage = roundHalfUp(average, 1);
       categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = roundedAverage;
-      if (catName !== "Summary") { // Exclude "Summary" category itself from overall rating calculation base
+      if (catName !== "Summary") { 
         validCategoryAveragesForOverall.push(roundedAverage);
       }
     } else {
-      categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = "N/A"; // Or 0.0 if preferred for consistency
+      categoryAverages[catName.toLowerCase() as keyof PlayerAverages] = "N/A"; 
     }
   }
   
-  let overallRatingValue: number | string = 0; // Default to 0 instead of "N/A" if calculable
+  let overallRatingValue: number | string = 0; 
   if (validCategoryAveragesForOverall.length > 0) {
     overallRatingValue = roundHalfUp(validCategoryAveragesForOverall.reduce((sum, val) => sum + val, 0) / validCategoryAveragesForOverall.length, 1);
   } else if (Object.values(categoriesData).some(arr => arr.length > 0)) {
-     // Some data was parsed but didn't contribute to overall (e.g., only Summary had values)
      overallRatingValue = 0; 
   } else {
-     // No numeric data found at all
      overallRatingValue = "N/A"; 
   }
   
@@ -158,7 +147,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
 
   return {
-    playerName: playerName, // Keep playerName in the returned object, just don't display it if not needed.
+    playerName: playerName, 
     overallRating: finalOverallRating,
     offense: categoryAverages.offense ?? "N/A",
     defense: categoryAverages.defense ?? "N/A",
@@ -187,14 +176,13 @@ export default function PlayerCategoryAveragesCalculator() {
     const parsedData = parsePlayerAveragesData(statsInput);
 
     if (parsedData) {
-      // Check if all primary categories are N/A and overall is 0 or "N/A"
       const allPrimaryNA = parsedData.offense === "N/A" && parsedData.defense === "N/A" && parsedData.physicals === "N/A";
       
       if (parsedData.overallRating === 0 && allPrimaryNA && parsedData.summary === "N/A") {
          setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
          return;
       }
-       if (parsedData.overallRating === "N/A") { // Implies no valid data at all was found
+       if (parsedData.overallRating === "N/A") { 
         setError("No valid numeric data found to calculate averages. Please check input.");
         return;
       }
@@ -206,9 +194,9 @@ export default function PlayerCategoryAveragesCalculator() {
   
   const formatDisplayValue = (value: number | string) => {
     if (typeof value === 'number') {
-      return value.toFixed(1); // Always display one decimal place
+      return value.toFixed(1); 
     }
-    return value; // Handles "N/A"
+    return value; 
   };
 
   return (
@@ -222,12 +210,12 @@ export default function PlayerCategoryAveragesCalculator() {
                 <Info className="h-5 w-5 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent side="top" align="end" className="max-w-md">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm">
                   Paste player report data using the format shown in the placeholder. 
                   Category names (Offense, Defense, Physicals, Summary) identify sections. 
                   Numeric ratings (e.g., 8 or 7.5) are averaged for each category.
                   For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: `Key: Raw Value | Numeric Rating` (e.g., `Age: 19.51 | 9`). 
-                  The value after " | " (space-pipe-space) is used for calculation.
+                  The value after " | " (space on both sides of the pipe) is used for calculation.
                   The tool calculates category averages and an overall rating, rounded to one decimal place.
                 </p>
               </TooltipContent>
@@ -261,7 +249,7 @@ export default function PlayerCategoryAveragesCalculator() {
         {averages && (
           <>
             <Separator />
-            <div className="text-left p-4 bg-accent/10 rounded-md w-full">
+            <div className="text-left p-4 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
               <h3 className="text-lg font-semibold text-accent-foreground mb-2 text-center">
                 Calculated Averages
               </h3>

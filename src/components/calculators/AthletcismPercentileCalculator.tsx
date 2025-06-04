@@ -57,7 +57,7 @@ export default function AthletcismPercentileCalculator() {
                 <Info className="h-5 w-5 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent side="top" align="end" className="max-w-sm">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm">
                   Input estimated athletic ratings to calculate overall and individual athleticism percentiles.
                   Speed and Agility are rated 45-95 (a raw score of 45 is 0th percentile, 95 is 100th).
                   Vertical is rated 50-99 (a raw score of 50 is 0th percentile, 99 is 100th).
@@ -69,7 +69,7 @@ export default function AthletcismPercentileCalculator() {
         </div>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="focus:outline-none">
           <CardContent className="space-y-6">
             <FormField
               control={form.control}
@@ -116,7 +116,7 @@ export default function AthletcismPercentileCalculator() {
             {percentileResult !== null && individualPercentiles !== null && (
               <>
                 <Separator />
-                <div className="text-center p-4 bg-accent/10 rounded-md w-full">
+                <div className="text-center p-4 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
                   <h3 className="text-lg font-semibold text-accent-foreground">Overall Athleticism Percentile</h3>
                   <p className="text-3xl font-bold text-accent">{percentileResult.toFixed(2)}%</p>
                   <div className="mt-2 text-sm text-muted-foreground">
