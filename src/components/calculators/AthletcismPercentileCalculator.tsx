@@ -7,26 +7,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AthleticismFormData, AthleticismSchema } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 const calculatePercentile = (value: number, min: number, max: number, lowerIsBetter: boolean = false): number => {
   if (min === max) return 50; 
   
-  const clampedValue = Math.max(min, Math.min(max, value));
+  let clampedValue = Math.max(min, Math.min(max, value));
 
   let score: number;
   if (lowerIsBetter) {
+    // For lower is better, a raw value equal to min_val is 100th percentile, max_val is 0th.
+    // This was the original interpretation based on "lower is better = true"
+    // score = (max_val - clampedValue) / (max_val - min_val);
+    // Based on Python code provided (03/28), it should be direct:
     score = (clampedValue - min) / (max - min);
   } else {
     score = (clampedValue - min) / (max - min);
   }
-  // For speed/agility, if using the direct formula (value - min) / (max - min) * 100:
-  // A lower raw score (better performance) will result in a lower percentile.
-  // Example: Speed 45 (min) -> (45-45)/(95-45)*100 = 0 percentile.
-  // Speed 95 (max) -> (95-45)/(95-45)*100 = 100 percentile.
-  // This matches the Python logic provided where it doesn't invert for speed/agility.
   return Math.max(0, Math.min(100, score * 100));
 };
 
@@ -44,8 +45,10 @@ export default function AthletcismPercentileCalculator() {
   });
 
   function onSubmit(data: AthleticismFormData) {
-    const speedPercentile = calculatePercentile(data.speed, 45, 95, true); 
-    const agilityPercentile = calculatePercentile(data.agility, 45, 95, true);
+    // As per Python code: Speed and Agility (45-95 range) direct percentile. Lower raw score = lower percentile.
+    const speedPercentile = calculatePercentile(data.speed, 45, 95, false); 
+    const agilityPercentile = calculatePercentile(data.agility, 45, 95, false);
+    // Vertical (50-99 range) direct percentile. Higher raw score = higher percentile.
     const verticalPercentile = calculatePercentile(data.vertical, 50, 99, false);
 
     const overallPercentile = (speedPercentile + agilityPercentile + verticalPercentile) / 3;
@@ -60,12 +63,23 @@ export default function AthletcismPercentileCalculator() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
-        <CardDescription>
-          Input estimated athletic ratings. Calculates overall athleticism percentile.
-          For Speed and Agility ratings, a lower value is considered better.
-          For Vertical rating, a higher value is better. Ensure inputs are within the specified ranges.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
+          <TooltipProvider>
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Info className="h-5 w-5 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" align="end" className="max-w-sm">
+                <p className="text-sm text-muted-foreground">
+                  Input estimated athletic ratings. Calculates overall athleticism percentile.
+                  For Speed and Agility ratings (45-95), a lower raw value means better performance but results in a lower percentile.
+                  For Vertical rating (50-99), a higher raw value means better performance and results in a higher percentile.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>

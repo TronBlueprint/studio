@@ -4,13 +4,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { PlayerAverages, CATEGORY_KEYS_PLAYER_AVG } from '@/lib/types';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
-const placeholderText = `Player Name Sample Player
+const placeholderText = `Player Name 
 
 Offense
 Shooting: 8
@@ -47,14 +49,14 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   const lines = textInput.split('\n').map(line => line.trim().replace(/^#+\s*/, '')).filter(line => line);
   if (lines.length < 3) return null; 
 
-  let playerName = "Player"; // Default if not found or is placeholder
+  let playerName = "Player"; 
   const categoriesData: { [key: string]: number[] } = {
     Offense: [], Defense: [], Physicals: [], Summary: []
   };
   let currentCategoryName: keyof typeof CATEGORY_KEYS_PLAYER_AVG | null = null;
 
   for (const rawLine of lines) {
-    const line = rawLine; 
+    let line = rawLine; 
 
     if (line.toLowerCase().startsWith("player name")) {
       let nameCandidate = line.substring("player name".length).trim().replace(/^[:\s]+/, '');
@@ -141,7 +143,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   const finalOverallRating = typeof overallRatingValue === 'number' ? overallRatingValue : (Object.values(categoriesData).some(arr => arr.length > 0) ? 0 : "N/A");
 
   return {
-    playerName: playerName, // Still return it, but won't display it in results header
+    playerName: playerName, 
     overallRating: finalOverallRating,
     offense: categoryAverages.offense ?? "N/A",
     defense: categoryAverages.defense ?? "N/A",
@@ -152,32 +154,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
 
 export default function PlayerCategoryAveragesCalculator() {
-  const [statsInput, setStatsInput] = useState<string>(`Player Name
-
-Offense
-Shooting: 8
-Finishing: 7.5
-Shot Creation: 7
-Passing: 6.5
-Dribbling: 7
-
-Defense
-Perimeter: 8
-Interior: 6
-Playmaking: 5.5
-
-Physicals
-Athleticism: 7.5
-Age: 19.25 | 9
-Height: 6'8 | 8.5
-Wingspan: 7'1 | 7
-
-Summary
-NBA Ready: 7
-Potential Min: 6
-Potential Mid: 8
-Potential Max: 9.5
-`);
+  const [statsInput, setStatsInput] = useState<string>(placeholderText);
   const [averages, setAverages] = useState<PlayerAverages | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -185,34 +162,9 @@ Potential Max: 9.5
     setError(null);
     setAverages(null);
 
-    const cleanPlaceholder = `Player Name
+    const cleanPlaceholder = placeholderText.trim();
 
-Offense
-Shooting: 8
-Finishing: 7.5
-Shot Creation: 7
-Passing: 6.5
-Dribbling: 7
-
-Defense
-Perimeter: 8
-Interior: 6
-Playmaking: 5.5
-
-Physicals
-Athleticism: 7.5
-Age: 19.25 | 9
-Height: 6'8 | 8.5
-Wingspan: 7'1 | 7
-
-Summary
-NBA Ready: 7
-Potential Min: 6
-Potential Mid: 8
-Potential Max: 9.5
-`;
-
-    if (!statsInput.trim() || statsInput.trim() === cleanPlaceholder.trim() || statsInput.trim().split('\n').length < 3) {
+    if (!statsInput.trim() || statsInput.trim() === cleanPlaceholder || statsInput.trim().split('\n').length < 3) {
       setError("Please provide sufficient player data in the expected format.");
       return;
     }
@@ -246,14 +198,27 @@ Potential Max: 9.5
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Player Category Averages</CardTitle>
-        <CardDescription>
-          Paste player report data using the format shown in the placeholder. Lines starting with 'Player Name',
-          'Offense', 'Defense', 'Physicals', or 'Summary' identify sections. Numeric ratings can be whole numbers (e.g., 8) or decimals (e.g., 7.5).
-          For 'Offense', 'Defense', 'Summary', and 'Athleticism' (under Physicals), provide a direct numeric rating (e.g., `Shooting: 8.5`).
-          For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: `Key: Raw Value | Numeric Rating` (e.g., `Age: 19.51 | 9`).
-          The numeric rating after the ` | ` (space-pipe-space) is used for calculation. The tool calculates category averages and an overall rating, rounded to one decimal place.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-headline">Player Category Averages</CardTitle>
+          <TooltipProvider>
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Info className="h-5 w-5 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" align="end" className="max-w-md">
+                <p className="text-sm text-muted-foreground">
+                  Paste player report data using the format shown in the placeholder. 
+                  Category names (Offense, Defense, Physicals, Summary) identify sections. 
+                  Numeric ratings can be whole numbers (e.g., 8) or decimals (e.g., 7.5).
+                  For 'Offense', 'Defense', 'Summary', and 'Athleticism' (under Physicals), provide a direct numeric rating (e.g., `Shooting: 8.5`).
+                  For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: `Key: Raw Value | Numeric Rating` (e.g., `Age: 19.51 | 9`). 
+                  Ensure a space before and after the `|` character. The numeric rating after the `|` is used for calculation.
+                  The tool calculates category averages and an overall rating, rounded to one decimal place.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -262,32 +227,7 @@ Potential Max: 9.5
             id="stats-input"
             value={statsInput}
             onChange={(e) => setStatsInput(e.target.value)}
-            placeholder={`Player Name 
-
-Offense
-Shooting: 8
-Finishing: 7.5
-Shot Creation: 7
-Passing: 6.5
-Dribbling: 7
-
-Defense
-Perimeter: 8
-Interior: 6
-Playmaking: 5.5
-
-Physicals
-Athleticism: 7.5
-Age: 18.51 | 10
-Height: 6’9 | 10
-Wingspan: 7’0 | 5
-
-Summary
-NBA Ready: 7
-Potential Min: 6
-Potential Mid: 8
-Potential Max: 9.5
-`}
+            placeholder={placeholderText}
             rows={15}
             className="font-code mt-1 text-xs"
           />

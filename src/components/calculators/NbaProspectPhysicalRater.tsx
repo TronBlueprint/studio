@@ -7,11 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { NbaProspectFormData, NbaProspectSchema, POSITIONS } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 const getAgeRatingPy = (age: number): number => {
   const ageScale = [
@@ -74,50 +76,40 @@ const wingspanPoints = [
   { diff: 3.5, rating: 5.5 }, { diff: 3.0, rating: 5.0 }, { diff: 2.5, rating: 4.5 },
   { diff: 2.0, rating: 4.0 }, { diff: 1.5, rating: 3.5 }, { diff: 1.0, rating: 3.0 },
   { diff: 0.5, rating: 2.5 }, 
-  { diff: 0.25, rating: 2.25}, // Special case for interpolation: 0.25 diff should result in an interpolated value of 2.25 before final rounding to nearest 0.5
+  { diff: 0.25, rating: 2.25}, 
   { diff: 0.0, rating: 2.0 }, 
   { diff: -0.5, rating: 1.5 },
   { diff: -1.0, rating: 1.0 } 
-].sort((a, b) => b.diff - a.diff); // Ensure sorted by diff descending for correct interpolation
+].sort((a, b) => b.diff - a.diff); 
 
 const getWingspanRatingPy = (differential: number): number => {
-  const epsilon = 0.0001; // For floating point comparisons
+  const epsilon = 0.0001; 
 
-  // Handle exact top and bottom of scale
   if (differential >= wingspanPoints[0].diff - epsilon) {
-    return wingspanPoints[0].rating; // 10.0 for diff >= 7.0
+    return wingspanPoints[0].rating; 
   }
   if (differential <= wingspanPoints[wingspanPoints.length - 1].diff + epsilon) {
-    return wingspanPoints[wingspanPoints.length - 1].rating; // 1.0 for diff <= -1.0
+    return wingspanPoints[wingspanPoints.length - 1].rating; 
   }
 
-  // Find the two points the differential falls between for interpolation
   for (let i = 0; i < wingspanPoints.length - 1; i++) {
-    const p1 = wingspanPoints[i];    // Upper point (larger diff, higher rating)
-    const p2 = wingspanPoints[i+1];  // Lower point (smaller diff, lower rating)
+    const p1 = wingspanPoints[i];    
+    const p2 = wingspanPoints[i+1];  
 
-    // Exact match for p1.diff (already handled by initial check if p1 is the first point)
     if (Math.abs(differential - p1.diff) < epsilon) return p1.rating;
     
-    // If differential is between p1.diff and p2.diff
     if (differential < p1.diff && differential > p2.diff) {
-      // Linear interpolation: y = y1 + (x - x1) * (y2 - y1) / (x2 - x1)
-      // (x1,y1) = (p2.diff, p2.rating) and (x2,y2) = (p1.diff, p1.rating) for calculation
       const interpolatedRating = p2.rating + 
         (differential - p2.diff) * (p1.rating - p2.rating) / (p1.diff - p2.diff);
-      
-      // Round to nearest 0.5. If exactly .25 or .75, it rounds up to the next 0.5.
-      // Math.round(x * 2) / 2 achieves rounding to nearest 0.5 (e.g., 2.25 -> 2.5, 2.1 -> 2.0, 2.75 -> 3.0)
       return Math.round(interpolatedRating * 2) / 2;
     }
   }
   
-  // Fallback for exact match on the last point if not caught (e.g., p2.diff)
    if (Math.abs(differential - wingspanPoints[wingspanPoints.length-1].diff) < epsilon) {
     return wingspanPoints[wingspanPoints.length-1].rating;
   }
   
-  return 1.0; // Default fallback if something unexpected happens
+  return 1.0; 
 };
 
 
@@ -138,7 +130,6 @@ const calculateOverallRating = (data: NbaProspectFormData): number => {
 
   const overallScoreOutOf10 = (normAgeScore * 3.0) + (normHeightScore * 3.5) + (normWingspanScore * 3.5);
   
-  // Round to one decimal place: e.g. 4.22 -> 4.2, 4.55 -> 4.6
   const roundedOverallScore = Math.round(overallScoreOutOf10 * 10) / 10;
 
   return Math.max(0, Math.min(10, roundedOverallScore));
@@ -179,13 +170,24 @@ export default function NbaProspectPhysicalRater() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Physical Rater</CardTitle>
-        <CardDescription>
-          Enter prospect's age (e.g., 19.75 for 19 years and 9 months), 
-          height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
-          Age input can be a decimal. Height and wingspan can include fractions like .25, .5, .75.
-          Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-headline">Physical Rater</CardTitle>
+          <TooltipProvider>
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <Info className="h-5 w-5 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" align="end" className="max-w-sm">
+                <p className="text-sm text-muted-foreground">
+                  Enter prospect's age (e.g., 19.75 for 19 years and 9 months; range 17-30), 
+                  height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
+                  Height/wingspan can include .25, .5, .75 fractions (e.g., 6'5.25").
+                  Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -247,7 +249,7 @@ export default function NbaProspectPhysicalRater() {
                           key={pos.value} 
                           value={pos.value}
                           className={cn(
-                            "hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                            "focus:bg-primary focus:text-primary-foreground data-[highlighted]:bg-primary data-[highlighted]:text-primary-foreground"
                           )}
                         >
                           {pos.label}
