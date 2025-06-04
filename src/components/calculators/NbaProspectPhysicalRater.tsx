@@ -200,18 +200,10 @@ export default function NbaProspectPhysicalRater() {
               </Tooltip>
             </TooltipProvider>
           </div>
-          <TooltipProvider>
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top" align="end">
-                <p>Reset Fields</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
+            <RotateCcw className="h-4 w-4" />
+            <span className="sr-only">Reset Fields</span>
+          </Button>
         </div>
       </CardHeader>
       <Form {...form}>
