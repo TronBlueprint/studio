@@ -91,7 +91,16 @@ export default function AthletcismPercentileCalculator() {
                 <FormItem>
                   <FormLabel>Speed Rating</FormLabel>
                   <FormControl>
-                    <Input type="number" step="1" placeholder="45-95" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                    <Input 
+                      type="number" 
+                      step="1" 
+                      placeholder="45-95" 
+                      {...field} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        field.onChange(val === '' ? '' : parseFloat(val));
+                      }} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,7 +113,16 @@ export default function AthletcismPercentileCalculator() {
                 <FormItem>
                   <FormLabel>Agility Rating</FormLabel>
                   <FormControl>
-                    <Input type="number" step="1" placeholder="45-95" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                    <Input 
+                      type="number" 
+                      step="1" 
+                      placeholder="45-95" 
+                      {...field} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        field.onChange(val === '' ? '' : parseFloat(val));
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +135,16 @@ export default function AthletcismPercentileCalculator() {
                 <FormItem>
                   <FormLabel>Vertical Rating</FormLabel>
                   <FormControl>
-                    <Input type="number" step="1" placeholder="50-99" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                    <Input 
+                      type="number" 
+                      step="1" 
+                      placeholder="50-99" 
+                      {...field} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        field.onChange(val === '' ? '' : parseFloat(val));
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -181,7 +181,16 @@ export default function NbaProspectPhysicalRater() {
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input type="number" step="0.01" placeholder="e.g., 19.5" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                    <Input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="e.g., 19.5" 
+                      {...field} 
+                      onChange={e => {
+                        const val = e.target.value;
+                        field.onChange(val === '' ? '' : parseFloat(val));
+                      }} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
