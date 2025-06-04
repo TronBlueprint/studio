@@ -20,9 +20,17 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-11 w-full items-center justify-between rounded-xl border shadow-glass-soft text-foreground placeholder:text-muted-foreground ring-offset-background transition-all duration-200 ease-in-out",
-      "bg-white/40 dark:bg-black/40 backdrop-blur-xl border-white/50 dark:border-white/20",
-      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:border-primary/50 focus:bg-white/50 dark:focus:bg-black/50",
+      "flex h-11 w-full items-center justify-between rounded-xl border text-foreground placeholder:text-muted-foreground ring-offset-background transition-all duration-200 ease-in-out shadow-glass-soft",
+      // Pearl white message UI inspired style
+      "bg-white/[.18] dark:bg-black/[.18] backdrop-blur-xl",
+      "border-white/[.25] dark:border-white/[.15]",
+      "ring-1 ring-inset ring-white/40 dark:ring-1 dark:ring-inset dark:ring-white/20",
+
+      // Focus state
+      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2", // Standard Radix focus
+      "focus:border-primary/50", // Custom border color on focus
+      "focus:bg-white/25 dark:focus:bg-black/25", // Custom background on focus
+      
       "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       "px-4 py-2.5 text-sm",
       className
@@ -80,8 +88,8 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl text-popover-foreground shadow-glass-xl", // Glass effect for content
-        "bg-white/50 dark:bg-black/50 backdrop-blur-xl border border-white/20 dark:border-white/10", // Adjusted to match other popovers
+        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl text-popover-foreground shadow-glass-xl",
+        "bg-white/50 dark:bg-black/50 backdrop-blur-xl border border-white/20 dark:border-white/10",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
@@ -126,7 +134,7 @@ const SelectItem = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-8 pr-2 text-sm outline-none transition-colors",
-      "focus:bg-primary/20 focus:text-primary data-[highlighted]:bg-primary/20 data-[highlighted]:text-primary", // Updated focus/highlight
+      "focus:bg-primary/30 dark:focus:bg-primary/40 focus:text-primary-foreground data-[highlighted]:bg-primary/30 dark:data-[highlighted]:bg-primary/40 data-[highlighted]:text-primary-foreground",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
