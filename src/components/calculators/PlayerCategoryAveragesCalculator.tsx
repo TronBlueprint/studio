@@ -261,16 +261,16 @@ export default function PlayerCategoryAveragesCalculator() {
         {averages && (
           <>
             <Separator />
-            <div className="p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-              <p className="text-3xl font-bold text-primary-foreground text-center mb-4">
+            <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
+              <p className="text-base text-primary-foreground mb-2">
                 Overall Rating: {formatDisplayValue(averages.overallRating)}
               </p>
-              <ul className="text-sm text-primary-foreground/70 space-y-1 list-none pl-0 md:columns-2">
-                <li><span className="font-medium">Offense Avg:</span> {formatDisplayValue(averages.offense)}</li>
-                <li><span className="font-medium">Defense Avg:</span> {formatDisplayValue(averages.defense)}</li>
-                <li><span className="font-medium">Physicals Avg:</span> {formatDisplayValue(averages.physicals)}</li>
-                <li><span className="font-medium">Summary Avg:</span> {formatDisplayValue(averages.summary)}</li>
-              </ul>
+              <div className="text-base text-primary-foreground space-y-1">
+                <p>Offense Avg: {formatDisplayValue(averages.offense)}</p>
+                <p>Defense Avg: {formatDisplayValue(averages.defense)}</p>
+                <p>Physicals Avg: {formatDisplayValue(averages.physicals)}</p>
+                <p>Summary Avg: {formatDisplayValue(averages.summary)}</p>
+              </div>
             </div>
           </>
         )}

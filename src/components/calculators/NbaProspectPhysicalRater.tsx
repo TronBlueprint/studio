@@ -285,12 +285,11 @@ export default function NbaProspectPhysicalRater() {
               <>
                 <Separator />
                 <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-                  
-                  <p className="text-3xl font-bold text-primary-foreground mb-4">{ratingResult.toFixed(1)}/10</p>
-                  <div className="text-sm text-primary-foreground/70 space-y-1">
-                    <p><span className="font-medium">Age Rating:</span> {individualRatings.age.toFixed(1)}/10</p>
-                    <p><span className="font-medium">Height Rating:</span> {individualRatings.height.toFixed(1)}/10</p>
-                    <p><span className="font-medium">Wingspan Diff. Rating:</span> {individualRatings.wingspan.toFixed(1)}/10</p>
+                  <p className="text-base text-primary-foreground mb-2">{ratingResult.toFixed(1)}/10</p>
+                  <div className="text-base text-primary-foreground space-y-1">
+                    <p>Age Rating: {individualRatings.age.toFixed(1)}/10</p>
+                    <p>Height Rating: {individualRatings.height.toFixed(1)}/10</p>
+                    <p>Wingspan Diff. Rating: {individualRatings.wingspan.toFixed(1)}/10</p>
                   </div>
                 </div>
               </>

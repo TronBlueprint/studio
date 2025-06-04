@@ -129,12 +129,11 @@ export default function AthletcismPercentileCalculator() {
               <>
                 <Separator />
                 <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-                  
-                  <p className="text-3xl font-bold text-primary-foreground mb-4">{percentileResult.toFixed(2)}%</p>
-                  <div className="text-sm text-primary-foreground/70 space-y-1">
-                    <p><span className="font-medium">Speed:</span> {individualPercentiles.speed.toFixed(2)}%</p>
-                    <p><span className="font-medium">Agility:</span> {individualPercentiles.agility.toFixed(2)}%</p>
-                    <p><span className="font-medium">Vertical:</span> {individualPercentiles.vertical.toFixed(2)}%</p>
+                  <p className="text-base text-primary-foreground mb-2">{percentileResult.toFixed(2)}%</p>
+                  <div className="text-base text-primary-foreground space-y-1">
+                    <p>Speed: {individualPercentiles.speed.toFixed(2)}%</p>
+                    <p>Agility: {individualPercentiles.agility.toFixed(2)}%</p>
+                    <p>Vertical: {individualPercentiles.vertical.toFixed(2)}%</p>
                   </div>
                 </div>
               </>
