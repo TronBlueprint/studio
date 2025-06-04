@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AthletcismPercentileCalculator from "@/components/calculators/AthletcismPercentileCalculator";
 import NbaProspectPhysicalRater from "@/components/calculators/NbaProspectPhysicalRater";
@@ -7,16 +8,9 @@ import PlayerCategoryAveragesCalculator from "@/components/calculators/PlayerCat
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center pt-8 pb-12 md:pb-16 px-4 selection:bg-primary/20 selection:text-primary">
-      <header className="mb-8 md:mb-12 text-center">
-        <h1 className="text-5xl md:text-6xl font-headline font-extrabold text-primary tracking-tight">
-          Zenith
-        </h1>
-        <p className="text-muted-foreground mt-4 text-lg max-w-md mx-auto">
-          Game-ifying draft scouting (sorry)
-        </p>
-      </header>
+      {/* Header removed */}
 
-      <Tabs defaultValue="athleticism" className="w-full max-w-3xl"> {/* Increased max-width for more space */}
+      <Tabs defaultValue="athleticism" className="w-full max-w-3xl mt-8 md:mt-12"> {/* Increased max-width for more space and added top margin */}
         <TabsList className="grid w-full grid-cols-3 h-auto mb-4">
           <TabsTrigger value="athleticism">Athleticism %</TabsTrigger>
           <TabsTrigger value="nba-prospect">Physical Rater</TabsTrigger>
@@ -42,3 +36,4 @@ export default function Home() {
     </div>
   );
 }
+
