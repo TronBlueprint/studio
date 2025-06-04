@@ -11,10 +11,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 
-// calculatePercentile matches the Python version.
-// Python: (value - min_val) / (max_val - min_val) * 100
-// For speed/agility, a lower raw score is better, so a raw score of 45 (min) should be 0th percentile.
-// For vertical, a higher raw score is better, so a raw score of 99 (max) should be 100th percentile.
 const calculatePercentile = (value: number, min: number, max: number, lowerIsBetter: boolean = false): number => {
   if (min === max) return 50; 
   
@@ -22,14 +18,15 @@ const calculatePercentile = (value: number, min: number, max: number, lowerIsBet
 
   let score: number;
   if (lowerIsBetter) {
-    // If lower is better, a min_val input should give 0 percentile.
-    // (clampedValue - min_val) / (max_val - min_val) - this would make min_val = 0 percentile.
-    // The Python code implies this directly for speed/agility by not inverting.
     score = (clampedValue - min) / (max - min);
   } else {
-    // Higher is better (like vertical jump)
     score = (clampedValue - min) / (max - min);
   }
+  // For speed/agility, if using the direct formula (value - min) / (max - min) * 100:
+  // A lower raw score (better performance) will result in a lower percentile.
+  // Example: Speed 45 (min) -> (45-45)/(95-45)*100 = 0 percentile.
+  // Speed 95 (max) -> (95-45)/(95-45)*100 = 100 percentile.
+  // This matches the Python logic provided where it doesn't invert for speed/agility.
   return Math.max(0, Math.min(100, score * 100));
 };
 
@@ -47,11 +44,9 @@ export default function AthletcismPercentileCalculator() {
   });
 
   function onSubmit(data: AthleticismFormData) {
-    // Speed (45-95), Agility (45-95) - Python logic implies direct percentile (lower raw score = lower percentile)
-    // Vertical (50-99) - Python logic implies direct percentile (higher raw score = higher percentile)
-    const speedPercentile = calculatePercentile(data.speed, 45, 95, true); // True: lower value is better, but percentile calc is direct
-    const agilityPercentile = calculatePercentile(data.agility, 45, 95, true); // True: lower value is better, but percentile calc is direct
-    const verticalPercentile = calculatePercentile(data.vertical, 50, 99, false); // False: higher value is better
+    const speedPercentile = calculatePercentile(data.speed, 45, 95, true); 
+    const agilityPercentile = calculatePercentile(data.agility, 45, 95, true);
+    const verticalPercentile = calculatePercentile(data.vertical, 50, 99, false);
 
     const overallPercentile = (speedPercentile + agilityPercentile + verticalPercentile) / 3;
     setPercentileResult(overallPercentile);
@@ -67,8 +62,9 @@ export default function AthletcismPercentileCalculator() {
       <CardHeader>
         <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
         <CardDescription>
-          Input estimated athletic ratings (not raw test data).
-          Calculates overall athleticism percentile. Speed/Agility: lower rating is better. Vertical: higher rating is better.
+          Input estimated athletic ratings. Calculates overall athleticism percentile.
+          For Speed and Agility ratings, a lower value is considered better.
+          For Vertical rating, a higher value is better. Ensure inputs are within the specified ranges.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -81,7 +77,7 @@ export default function AthletcismPercentileCalculator() {
                 <FormItem>
                   <FormLabel>Speed Rating</FormLabel>
                   <FormControl>
-                    <Input type="number" step="1" placeholder="45-95 (lower is better)" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                    <Input type="number" step="1" placeholder="45-95" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,7 +90,7 @@ export default function AthletcismPercentileCalculator() {
                 <FormItem>
                   <FormLabel>Agility Rating</FormLabel>
                   <FormControl>
-                    <Input type="number" step="1" placeholder="45-95 (lower is better)" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                    <Input type="number" step="1" placeholder="45-95" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,7 +103,7 @@ export default function AthletcismPercentileCalculator() {
                 <FormItem>
                   <FormLabel>Vertical Rating</FormLabel>
                   <FormControl>
-                    <Input type="number" step="1" placeholder="50-99 (higher is better)" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
+                    <Input type="number" step="1" placeholder="50-99" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,4 +132,3 @@ export default function AthletcismPercentileCalculator() {
     </Card>
   );
 }
-

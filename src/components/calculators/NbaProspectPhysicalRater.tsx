@@ -11,8 +11,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
-// Helper functions based on Python code
 const getAgeRatingPy = (age: number): number => {
   const ageScale = [
     { max_age: 18.59, rating: 10 }, { max_age: 19.39, rating: 9 }, { max_age: 20.10, rating: 8 }, 
@@ -30,7 +30,7 @@ const getPositionThresholdsPy = (position: NbaProspectFormData['position']): { t
   const thresholdsMap: { [key: string]: number } = {'PG': 68, 'SG': 70, 'SF': 72, 'PF': 74, 'C': 76};
   const start = thresholdsMap[position] || 68; 
   
-  const thresholds = Array.from({ length: 10 }, (_, i) => start + i); // For ratings 1-10, this covers start to start+9
+  const thresholds = Array.from({ length: 10 }, (_, i) => start + i); 
   const ratings = Array.from({ length: 10 }, (_, i) => i + 1);
   return { thresholds, ratings };
 };
@@ -39,34 +39,31 @@ const getHeightRatingPy = (heightIn: number, position: NbaProspectFormData['posi
   const { thresholds, ratings } = getPositionThresholdsPy(position);
 
   if (heightIn < thresholds[0]) return 1.0; 
-  // The last threshold (thresholds[9]) corresponds to rating 10. 
-  // If height is >= thresholds[9] (e.g. start+9 for C is 76+9=85), it gets rating 10.
   if (heightIn >= thresholds[thresholds.length - 1]) return 10.0; 
 
-  for (let i = 0; i < thresholds.length -1; i++) { // Iterate up to the second to last threshold
+  for (let i = 0; i < thresholds.length -1; i++) { 
     const lowerThresh = thresholds[i];
-    const upperThresh = thresholds[i+1]; // Next threshold
+    const upperThresh = thresholds[i+1]; 
     
-    if (Math.abs(heightIn - lowerThresh) < 0.01) { // Exact match with lowerThresh
+    if (Math.abs(heightIn - lowerThresh) < 0.01) { 
         return ratings[i];
     }
 
-    if (heightIn > lowerThresh && heightIn < upperThresh) { // Between two thresholds
+    if (heightIn > lowerThresh && heightIn < upperThresh) { 
         const midPoint = (lowerThresh + upperThresh) / 2.0;
-        if (Math.abs(heightIn - midPoint) < 0.01) { // Exactly halfway
+        if (Math.abs(heightIn - midPoint) < 0.01) { 
             return (ratings[i] + ratings[i+1]) / 2.0;
-        } else if (heightIn < midPoint) { // Closer to lower threshold
+        } else if (heightIn < midPoint) { 
             return ratings[i];
-        } else { // Closer to upper threshold
+        } else { 
             return ratings[i+1];
         }
     }
   }
-   // Should be caught by initial checks or loop, but as a final fallback for >= last threshold
   if (Math.abs(heightIn - thresholds[thresholds.length - 1]) < 0.01) {
       return ratings[thresholds.length - 1];
   }
-  return 1.0; // Default fallback, though logic should cover cases.
+  return 1.0; 
 };
 
 
@@ -76,72 +73,75 @@ const wingspanPoints = [
   { diff: 4.5, rating: 7.0 }, { diff: 4.25, rating: 6.5 }, { diff: 4.0, rating: 6.0 },
   { diff: 3.5, rating: 5.5 }, { diff: 3.0, rating: 5.0 }, { diff: 2.5, rating: 4.5 },
   { diff: 2.0, rating: 4.0 }, { diff: 1.5, rating: 3.5 }, { diff: 1.0, rating: 3.0 },
-  { diff: 0.5, rating: 2.5 }, { diff: 0.25, rating: 2.25}, // Special case from user: 0.25 diff should result in rating 2.25 BEFORE rounding.
+  { diff: 0.5, rating: 2.5 }, 
+  { diff: 0.25, rating: 2.25}, // Special case for interpolation: 0.25 diff should result in an interpolated value of 2.25 before final rounding to nearest 0.5
   { diff: 0.0, rating: 2.0 }, 
   { diff: -0.5, rating: 1.5 },
   { diff: -1.0, rating: 1.0 } 
-].sort((a, b) => b.diff - a.diff);
+].sort((a, b) => b.diff - a.diff); // Ensure sorted by diff descending for correct interpolation
 
 const getWingspanRatingPy = (differential: number): number => {
-  const epsilon = 0.0001;
+  const epsilon = 0.0001; // For floating point comparisons
 
+  // Handle exact top and bottom of scale
   if (differential >= wingspanPoints[0].diff - epsilon) {
-    return wingspanPoints[0].rating;
+    return wingspanPoints[0].rating; // 10.0 for diff >= 7.0
   }
   if (differential <= wingspanPoints[wingspanPoints.length - 1].diff + epsilon) {
-    return wingspanPoints[wingspanPoints.length - 1].rating;
+    return wingspanPoints[wingspanPoints.length - 1].rating; // 1.0 for diff <= -1.0
   }
 
+  // Find the two points the differential falls between for interpolation
   for (let i = 0; i < wingspanPoints.length - 1; i++) {
-    const p1 = wingspanPoints[i];    
-    const p2 = wingspanPoints[i+1];  
+    const p1 = wingspanPoints[i];    // Upper point (larger diff, higher rating)
+    const p2 = wingspanPoints[i+1];  // Lower point (smaller diff, lower rating)
 
+    // Exact match for p1.diff (already handled by initial check if p1 is the first point)
     if (Math.abs(differential - p1.diff) < epsilon) return p1.rating;
     
+    // If differential is between p1.diff and p2.diff
     if (differential < p1.diff && differential > p2.diff) {
       // Linear interpolation: y = y1 + (x - x1) * (y2 - y1) / (x2 - x1)
-      // Where x is differential, y is rating.
       // (x1,y1) = (p2.diff, p2.rating) and (x2,y2) = (p1.diff, p1.rating) for calculation
       const interpolatedRating = p2.rating + 
         (differential - p2.diff) * (p1.rating - p2.rating) / (p1.diff - p2.diff);
       
       // Round to nearest 0.5. If exactly .25 or .75, it rounds up to the next 0.5.
-      // Example: 2.1 -> 2.0; 2.25 -> 2.5; 2.6 -> 2.5; 2.75 -> 3.0
+      // Math.round(x * 2) / 2 achieves rounding to nearest 0.5 (e.g., 2.25 -> 2.5, 2.1 -> 2.0, 2.75 -> 3.0)
       return Math.round(interpolatedRating * 2) / 2;
     }
   }
   
-  // Fallback for exact match on the last point if not caught by the initial <= check due to epsilon logic
-  if (Math.abs(differential - wingspanPoints[wingspanPoints.length-1].diff) < epsilon) {
+  // Fallback for exact match on the last point if not caught (e.g., p2.diff)
+   if (Math.abs(differential - wingspanPoints[wingspanPoints.length-1].diff) < epsilon) {
     return wingspanPoints[wingspanPoints.length-1].rating;
   }
   
-  return 1.0; // Default fallback
+  return 1.0; // Default fallback if something unexpected happens
 };
 
 
-// Calculate overall 0-10 score
 const calculateOverallRating = (data: NbaProspectFormData): number => {
   const agePy = data.age; 
   const heightPy = data.height; 
   const wingspanPy = data.wingspan; 
   const positionPy = data.position;
 
-  const ageRating = getAgeRatingPy(agePy); // 1-10
-  const heightRating = getHeightRatingPy(heightPy, positionPy); // 1-10 (can be x.5)
+  const ageRating = getAgeRatingPy(agePy); 
+  const heightRating = getHeightRatingPy(heightPy, positionPy); 
   const wingspanDifferential = wingspanPy - heightPy;
-  const wingspanRating = getWingspanRatingPy(wingspanDifferential); // 1-10 (can be x.5)
+  const wingspanRating = getWingspanRatingPy(wingspanDifferential); 
 
-  // Normalize 1-10 ratings to 0-1 scores.
   const normAgeScore = Math.max(0, (ageRating - 1) / (10 - 1)); 
   const normHeightScore = Math.max(0, (heightRating - 1) / (10 - 1)); 
   const normWingspanScore = Math.max(0, (wingspanRating - 1) / (10 - 1)); 
 
-  // Weighted sum for overall score, targeting a 0-10 scale.
-  // Weights: Age (30% -> 3.0), Height (35% -> 3.5), Wingspan (35% -> 3.5)
   const overallScoreOutOf10 = (normAgeScore * 3.0) + (normHeightScore * 3.5) + (normWingspanScore * 3.5);
   
-  return Math.max(0, Math.min(10, overallScoreOutOf10)); // Ensure score is within 0-10 range.
+  // Round to one decimal place: e.g. 4.22 -> 4.2, 4.55 -> 4.6
+  const roundedOverallScore = Math.round(overallScoreOutOf10 * 10) / 10;
+
+  return Math.max(0, Math.min(10, roundedOverallScore));
 };
 
 
@@ -152,7 +152,7 @@ export default function NbaProspectPhysicalRater() {
   const form = useForm<NbaProspectFormData>({
     resolver: zodResolver(NbaProspectSchema),
     defaultValues: {
-      age: undefined, // Allow for XX.XX input
+      age: undefined, 
       height: "", 
       wingspan: "", 
       position: undefined,
@@ -181,8 +181,10 @@ export default function NbaProspectPhysicalRater() {
       <CardHeader>
         <CardTitle className="font-headline">Physical Rater</CardTitle>
         <CardDescription>
-          Enter prospect's age (e.g., 19 or 19.75), height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
-          Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings for age, height, and wingspan differential.
+          Enter prospect's age (e.g., 19.75 for 19 years and 9 months), 
+          height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
+          Age input can be a decimal. Height and wingspan can include fractions like .25, .5, .75.
+          Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
@@ -193,7 +195,7 @@ export default function NbaProspectPhysicalRater() {
               name="age"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Age (e.g., 19 or 19.5, range: 17-30)</FormLabel>
+                  <FormLabel>Age</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" placeholder="e.g., 19.5" {...field} onChange={e => field.onChange(parseFloat(e.target.value))} />
                   </FormControl>
@@ -206,7 +208,7 @@ export default function NbaProspectPhysicalRater() {
               name="height"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Height (e.g., 6'5" or 6'5.5")</FormLabel>
+                  <FormLabel>Height</FormLabel>
                   <FormControl>
                     <Input type="text" placeholder="e.g., 6'5.5" {...field} />
                   </FormControl>
@@ -219,7 +221,7 @@ export default function NbaProspectPhysicalRater() {
               name="wingspan"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Wingspan (e.g., 6'8" or 6'8.25")</FormLabel>
+                  <FormLabel>Wingspan</FormLabel>
                   <FormControl>
                     <Input type="text" placeholder="e.g., 6'8" {...field} />
                   </FormControl>
@@ -241,7 +243,15 @@ export default function NbaProspectPhysicalRater() {
                     </FormControl>
                     <SelectContent>
                       {POSITIONS.map(pos => (
-                        <SelectItem key={pos.value} value={pos.value}>{pos.label}</SelectItem>
+                        <SelectItem 
+                          key={pos.value} 
+                          value={pos.value}
+                          className={cn(
+                            "hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground"
+                          )}
+                        >
+                          {pos.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -272,4 +282,3 @@ export default function NbaProspectPhysicalRater() {
     </Card>
   );
 }
-
