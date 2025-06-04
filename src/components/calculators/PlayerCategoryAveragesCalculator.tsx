@@ -61,9 +61,8 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
     const playerNameMatch = line.match(/^(?:Player Name\s*:?\s*)?(.*)/i);
     if (playerNameMatch && playerNameMatch[1] && !Object.keys(CATEGORY_KEYS_PLAYER_AVG).some(cat => line.toLowerCase().startsWith(cat.toLowerCase()))) {
         let nameCandidate = playerNameMatch[1].trim();
-        // Check if the candidate is not one of the default placeholder lines or empty
         const defaultPlayerNamePlaceholder = placeholderText.split('\n')[0].replace("Player Name","").trim().toLowerCase();
-        if (nameCandidate && nameCandidate.toLowerCase() !== "sample player" && nameCandidate.toLowerCase() !== defaultPlayerNamePlaceholder) {
+        if (nameCandidate && nameCandidate.toLowerCase() !== "sample player" && nameCandidate.toLowerCase() !== defaultPlayerNamePlaceholder && nameCandidate.toLowerCase() !== "player name") {
             playerName = nameCandidate;
         }
         if (line.toLowerCase().startsWith("player name")) continue;
@@ -171,7 +170,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
 
 export default function PlayerCategoryAveragesCalculator() {
-  const [statsInput, setStatsInput] = useState<string>('');
+  const [statsInput, setStatsInput] = useState<string>(placeholderText);
   const [averages, setAverages] = useState<PlayerAverages | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -179,8 +178,9 @@ export default function PlayerCategoryAveragesCalculator() {
     setError(null);
     setAverages(null);
 
-    if (!statsInput.trim() || statsInput.trim().split('\n').length < 3) {
-      setError("Please provide sufficient player data in the expected format.");
+    const trimmedInput = statsInput.trim();
+    if (!trimmedInput || trimmedInput === placeholderText.trim() || trimmedInput.split('\n').length < 3) {
+      setError("Please provide sufficient player data in the expected format. The placeholder text does not count as input.");
       return;
     }
 
@@ -210,7 +210,7 @@ export default function PlayerCategoryAveragesCalculator() {
   };
 
   const handleReset = useCallback(() => {
-    setStatsInput('');
+    setStatsInput(placeholderText);
     setAverages(null);
     setError(null);
   }, []);
@@ -241,6 +241,7 @@ export default function PlayerCategoryAveragesCalculator() {
           </div>
           <Button variant="ghost" size="icon" onClick={handleReset}>
             <RotateCcw className="h-4 w-4" />
+            <span className="sr-only">Reset Fields</span>
           </Button>
         </div>
       </CardHeader>
@@ -251,7 +252,6 @@ export default function PlayerCategoryAveragesCalculator() {
             id="stats-input"
             value={statsInput}
             onChange={(e) => setStatsInput(e.target.value)}
-            placeholder={placeholderText}
             rows={15}
             className="font-code mt-1 text-xs resize-y"
           />
@@ -271,10 +271,10 @@ export default function PlayerCategoryAveragesCalculator() {
           <>
             <Separator />
             <div className="text-center p-6 w-full bg-primary/[.18] dark:bg-primary/[.25] text-primary-foreground backdrop-blur-xl border border-primary/[.25] dark:border-primary/[.35] shadow-primary-glass-shadow ring-1 ring-inset ring-white/30 dark:ring-white/20 rounded-xl">
-              <p className="text-base mb-2">
+              <p className="text-base text-primary-foreground mb-2">
                 Overall Rating: {formatDisplayValue(averages.overallRating)}
               </p>
-              <div className="text-base space-y-1">
+              <div className="text-base text-primary-foreground space-y-1">
                 <p>Offense Avg: {formatDisplayValue(averages.offense)}</p>
                 <p>Defense Avg: {formatDisplayValue(averages.defense)}</p>
                 <p>Physicals Avg: {formatDisplayValue(averages.physicals)}</p>

@@ -30,7 +30,7 @@ export default function AthletcismPercentileCalculator() {
       agility: '',
       vertical: '',
     },
-    mode: 'onSubmit', // Validate only on submit
+    mode: 'onSubmit', 
   });
 
   function onSubmit(data: AthleticismFormData) {
@@ -125,7 +125,7 @@ export default function AthletcismPercentileCalculator() {
             />
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
-            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Percentile</Button>
+            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Percentiles</Button>
             
             {percentileResult !== null && individualPercentiles !== null && (
               <>

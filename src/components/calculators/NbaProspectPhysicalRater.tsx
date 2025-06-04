@@ -76,7 +76,7 @@ const wingspanPoints = [
   { diff: 2.0, rating: 4.0 }, { diff: 1.5, rating: 3.5 }, { diff: 1.0, rating: 3.0 },
   { diff: 0.5, rating: 2.5 }, { diff: 0.25, rating: 2.25 }, { diff: 0.0, rating: 2.0 }, 
   { diff: -0.5, rating: 1.5 }, { diff: -1.0, rating: 1.0 } 
-].sort((a, b) => b.diff - a.diff); // Ensure descending order by diff for correct iteration
+].sort((a, b) => b.diff - a.diff); 
 
 const getWingspanRatingPy = (differential: number): number => {
   const epsilon = 0.0001; 
@@ -89,21 +89,16 @@ const getWingspanRatingPy = (differential: number): number => {
   }
 
   for (let i = 0; i < wingspanPoints.length - 1; i++) {
-    const p1 = wingspanPoints[i]; // Current point (higher differential)
-    const p2 = wingspanPoints[i+1]; // Next point (lower differential)
+    const p1 = wingspanPoints[i]; 
+    const p2 = wingspanPoints[i+1]; 
 
-    // Exact match for the higher point of the current segment
     if (Math.abs(differential - p1.diff) < epsilon) return p1.rating;
     
-    // If differential is between p1.diff and p2.diff (exclusive of p1.diff, inclusive of p2.diff for this loop pass)
     if (differential < p1.diff && differential >= p2.diff - epsilon) {
-      // Check for exact match with p2.diff
       if (Math.abs(differential - p2.diff) < epsilon) return p2.rating;
 
-      // Interpolate
       const interpolatedRating = p2.rating + 
         (differential - p2.diff) * (p1.rating - p2.rating) / (p1.diff - p2.diff);
-      // Round to nearest 0.5, with .25 rounding up to .5, and .75 rounding up to .0 of next number
       return Math.round(interpolatedRating * 2) / 2;
     }
   }
@@ -127,7 +122,7 @@ export default function NbaProspectPhysicalRater() {
       wingspan: "", 
       position: undefined,
     },
-    mode: "onSubmit" // Validate only on submit
+    mode: "onSubmit" 
   });
 
   function onSubmit(data: NbaProspectFormData) { 
@@ -172,6 +167,7 @@ export default function NbaProspectPhysicalRater() {
           </div>
           <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
             <RotateCcw className="h-4 w-4" />
+            <span className="sr-only">Reset Fields</span>
           </Button>
         </div>
       </CardHeader>
@@ -249,7 +245,7 @@ export default function NbaProspectPhysicalRater() {
             />
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
-            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Individual Ratings</Button>
+            <Button type="submit" variant="primaryGlass" className="w-full">Calculate Ratings</Button>
             {individualRatings !== null && (
               <>
                 <Separator />
