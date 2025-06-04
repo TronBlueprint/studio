@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { PlayerAverages, CATEGORY_KEYS_PLAYER_AVG } from '@/lib/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Info, RotateCcw } from "lucide-react";
 
 const placeholderText = `Player Name 
 
@@ -209,21 +209,35 @@ export default function PlayerCategoryAveragesCalculator() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-headline">Player Category Averages</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="font-headline">Player Category Averages</CardTitle>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start" className="max-w-md">
+                  <p className="text-sm">
+                    Paste player report data using the format shown in the placeholder. 
+                    Category names (Offense, Defense, Physicals, Summary) identify sections. 
+                    Numeric ratings (e.g., 8 or 7.5) are averaged for each category.
+                    For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: ` + "`Key: Raw Value | Numeric Rating`" + ` (e.g., ` + "`Age: 19.51 | 9`" + `). 
+                    The value after " | " (space on both sides of the pipe) is used for calculation.
+                    The tool calculates category averages and an overall rating, rounded to one decimal place.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <TooltipProvider>
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Info className="h-5 w-5 text-muted-foreground cursor-help" />
+                <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" align="end" className="max-w-md">
-                <p className="text-sm">
-                  Paste player report data using the format shown in the placeholder. 
-                  Category names (Offense, Defense, Physicals, Summary) identify sections. 
-                  Numeric ratings (e.g., 8 or 7.5) are averaged for each category.
-                  For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: `Key: Raw Value | Numeric Rating` (e.g., `Age: 19.51 | 9`). 
-                  The value after " | " (space on both sides of the pipe) is used for calculation.
-                  The tool calculates category averages and an overall rating, rounded to one decimal place.
-                </p>
+              <TooltipContent side="top" align="end">
+                <p>Reset Fields</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -252,7 +266,6 @@ export default function PlayerCategoryAveragesCalculator() {
         <Button onClick={handleCalculate} variant="primaryGlass" className="w-full">
           Calculate Averages
         </Button>
-        <Button type="button" variant="outline" className="w-full" onClick={handleReset}>Reset</Button>
         {averages && (
           <>
             <Separator />

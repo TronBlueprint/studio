@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Info, RotateCcw } from "lucide-react";
 
 const getAgeRatingPy = (age: number): number => {
   const ageScale = [
@@ -182,19 +182,33 @@ export default function NbaProspectPhysicalRater() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-headline">Physical Rater</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="font-headline">Physical Rater</CardTitle>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start" className="max-w-sm">
+                  <p className="text-sm">
+                    Enter prospect's age (e.g., 19.75 for 19 years and 9 months; range 17-30), 
+                    height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
+                    Height/wingspan can include .25, .5, .75 fractions (e.g., 6'5.25").
+                    Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings for age, height, and wingspan differential.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <TooltipProvider>
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Info className="h-5 w-5 text-muted-foreground cursor-help" />
+                <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" align="end" className="max-w-sm">
-                <p className="text-sm">
-                  Enter prospect's age (e.g., 19.75 for 19 years and 9 months; range 17-30), 
-                  height (e.g., 6'5" or 6'5.5"), wingspan (e.g., 6'8" or 6'8.25"), and position.
-                  Height/wingspan can include .25, .5, .75 fractions (e.g., 6'5.25").
-                  Calculates an overall physical rating (0.0-10.0) and individual 1-10 ratings for age, height, and wingspan differential.
-                </p>
+              <TooltipContent side="top" align="end">
+                <p>Reset Fields</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -275,7 +289,6 @@ export default function NbaProspectPhysicalRater() {
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
             <Button type="submit" variant="primaryGlass" className="w-full">Calculate Rating</Button>
-            <Button type="button" variant="outline" className="w-full" onClick={handleReset}>Reset</Button>
             {ratingResult !== null && individualRatings !== null && (
               <>
                 <Separator />

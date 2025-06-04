@@ -11,7 +11,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Info, RotateCcw } from "lucide-react";
 
 const calculatePercentile = (value: number, min: number, max: number): number => {
   let clampedValue = Math.max(min, Math.min(max, value));
@@ -56,19 +56,33 @@ export default function AthletcismPercentileCalculator() {
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="top" align="start" className="max-w-sm">
+                  <p className="text-sm">
+                    Input estimated athletic ratings to calculate overall and individual athleticism percentiles.
+                    Speed and Agility are rated 45-95 (a raw score of 45 is 0th percentile, 95 is 100th).
+                    Vertical is rated 50-99 (a raw score of 50 is 0th percentile, 99 is 100th).
+                    Ensure values are within the specified ranges.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <TooltipProvider>
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <Info className="h-5 w-5 text-muted-foreground cursor-help" />
+                <Button variant="ghost" size="icon" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
               </TooltipTrigger>
-              <TooltipContent side="top" align="end" className="max-w-sm">
-                <p className="text-sm">
-                  Input estimated athletic ratings to calculate overall and individual athleticism percentiles.
-                  Speed and Agility are rated 45-95 (a raw score of 45 is 0th percentile, 95 is 100th).
-                  Vertical is rated 50-99 (a raw score of 50 is 0th percentile, 99 is 100th).
-                  Ensure values are within the specified ranges.
-                </p>
+              <TooltipContent side="top" align="end">
+                <p>Reset Fields</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -119,7 +133,6 @@ export default function AthletcismPercentileCalculator() {
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
             <Button type="submit" variant="primaryGlass" className="w-full">Calculate Percentile</Button>
-            <Button type="button" variant="outline" className="w-full" onClick={handleReset}>Reset</Button>
             {percentileResult !== null && individualPercentiles !== null && (
               <>
                 <Separator />
