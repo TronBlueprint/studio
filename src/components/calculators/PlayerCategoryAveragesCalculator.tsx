@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { ListChecks } from 'lucide-react';
 import { PlayerAverages, CATEGORY_KEYS_PLAYER_AVG } from '@/lib/types';
 
 const placeholderText = `Player Name Sample Player
@@ -45,28 +44,29 @@ function roundHalfUp(num: number, decimals: number = 1): number {
 }
 
 function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
-  const lines = textInput.split('\n').map(line => line.trim()).filter(line => line);
+  const lines = textInput.split('\n').map(line => line.trim().replace(/^#+\s*/, '')).filter(line => line);
   if (lines.length < 3) return null; 
 
-  let playerName = "Unknown Player";
+  let playerName = "Player"; // Default if not found or is placeholder
   const categoriesData: { [key: string]: number[] } = {
     Offense: [], Defense: [], Physicals: [], Summary: []
   };
   let currentCategoryName: keyof typeof CATEGORY_KEYS_PLAYER_AVG | null = null;
 
   for (const rawLine of lines) {
-    const line = rawLine.replace(/^#+\s*/, ''); // Remove leading hashes and spaces
+    const line = rawLine; 
 
     if (line.toLowerCase().startsWith("player name")) {
-      playerName = line.substring("player name".length).trim().replace(/^[:\s]+/, '');
-      if (!playerName || playerName.toLowerCase() === "sample player") playerName = "Player";
+      let nameCandidate = line.substring("player name".length).trim().replace(/^[:\s]+/, '');
+      if (nameCandidate && nameCandidate.toLowerCase() !== "sample player") {
+        playerName = nameCandidate;
+      }
       continue;
     }
     
     const categoryMatch = line.match(/^(Offense|Defense|Physicals|Summary)/i);
     if (categoryMatch && categoryMatch[0]) {
         const matchedCategory = categoryMatch[0];
-        // Ensure exact match for case-insensitivity if CATEGORY_KEYS_PLAYER_AVG uses specific casing
         const foundCategoryKey = Object.keys(CATEGORY_KEYS_PLAYER_AVG).find(key => key.toLowerCase() === matchedCategory.toLowerCase());
         if (foundCategoryKey) {
             currentCategoryName = foundCategoryKey as keyof typeof CATEGORY_KEYS_PLAYER_AVG;
@@ -87,19 +87,18 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
         let stringToParseForNumber: string;
 
         if (currentCategoryName === "Physicals" && (keyPartRaw === "Age" || keyPartRaw === "Height" || keyPartRaw === "Wingspan")) {
-            const valueSegments = valuePartRaw.split(/\s*\|\s*/); // Split by " | "
+            const valueSegments = valuePartRaw.split(/\s*\|\s*/); 
             if (valueSegments.length > 1) {
                 stringToParseForNumber = valueSegments[valueSegments.length - 1].trim();
             } else {
-                stringToParseForNumber = valueSegments[0].trim(); // Fallback if " | " is not present
+                stringToParseForNumber = valueSegments[0].trim(); 
             }
         } else {
-             // For other keys or categories, take the part before any " | " or the whole string.
             stringToParseForNumber = valuePartRaw.split("|", 1)[0].trim();
         }
         
         stringToParseForNumber = stringToParseForNumber.replace(/[*_~]/g, "");
-        stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim(); // Remove parenthesized text
+        stringToParseForNumber = stringToParseForNumber.replace(/\s*\(.*?\)\s*$/, "").trim(); 
 
         try {
           const numericValue = parseFloat(stringToParseForNumber);
@@ -142,7 +141,7 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
   const finalOverallRating = typeof overallRatingValue === 'number' ? overallRatingValue : (Object.values(categoriesData).some(arr => arr.length > 0) ? 0 : "N/A");
 
   return {
-    playerName: playerName,
+    playerName: playerName, // Still return it, but won't display it in results header
     overallRating: finalOverallRating,
     offense: categoryAverages.offense ?? "N/A",
     defense: categoryAverages.defense ?? "N/A",
@@ -153,7 +152,32 @@ function parsePlayerAveragesData(textInput: string): PlayerAverages | null {
 
 
 export default function PlayerCategoryAveragesCalculator() {
-  const [statsInput, setStatsInput] = useState<string>(placeholderText);
+  const [statsInput, setStatsInput] = useState<string>(`Player Name
+
+Offense
+Shooting: 8
+Finishing: 7.5
+Shot Creation: 7
+Passing: 6.5
+Dribbling: 7
+
+Defense
+Perimeter: 8
+Interior: 6
+Playmaking: 5.5
+
+Physicals
+Athleticism: 7.5
+Age: 19.25 | 9
+Height: 6'8 | 8.5
+Wingspan: 7'1 | 7
+
+Summary
+NBA Ready: 7
+Potential Min: 6
+Potential Mid: 8
+Potential Max: 9.5
+`);
   const [averages, setAverages] = useState<PlayerAverages | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,7 +185,34 @@ export default function PlayerCategoryAveragesCalculator() {
     setError(null);
     setAverages(null);
 
-    if (!statsInput.trim() || statsInput.trim() === placeholderText.trim() || statsInput.trim().split('\n').length < 3) {
+    const cleanPlaceholder = `Player Name
+
+Offense
+Shooting: 8
+Finishing: 7.5
+Shot Creation: 7
+Passing: 6.5
+Dribbling: 7
+
+Defense
+Perimeter: 8
+Interior: 6
+Playmaking: 5.5
+
+Physicals
+Athleticism: 7.5
+Age: 19.25 | 9
+Height: 6'8 | 8.5
+Wingspan: 7'1 | 7
+
+Summary
+NBA Ready: 7
+Potential Min: 6
+Potential Mid: 8
+Potential Max: 9.5
+`;
+
+    if (!statsInput.trim() || statsInput.trim() === cleanPlaceholder.trim() || statsInput.trim().split('\n').length < 3) {
       setError("Please provide sufficient player data in the expected format.");
       return;
     }
@@ -170,9 +221,8 @@ export default function PlayerCategoryAveragesCalculator() {
 
     if (parsedData) {
       const allNA = parsedData.offense === "N/A" && parsedData.defense === "N/A" && parsedData.physicals === "N/A" && parsedData.summary === "N/A";
-      const isDefaultPlayerName = parsedData.playerName === "Unknown Player" || parsedData.playerName === "Player" || parsedData.playerName === "[Enter Player Name Here]";
       
-      if (parsedData.overallRating === 0 && allNA && isDefaultPlayerName && !statsInput.toLowerCase().includes("player name")) {
+      if (parsedData.overallRating === 0 && allNA && (parsedData.playerName === "Player" || !statsInput.toLowerCase().includes("player name"))) {
          setError("Could not parse data. Ensure format is correct and numeric values are provided for categories.");
          return;
       }
@@ -198,12 +248,11 @@ export default function PlayerCategoryAveragesCalculator() {
       <CardHeader>
         <CardTitle className="font-headline">Player Category Averages</CardTitle>
         <CardDescription>
-          Paste player report data using the format shown in the placeholder below.
-          Lines starting with 'Player Name', 'Offense', 'Defense', 'Physicals', or 'Summary' identify sections. '#' characters are ignored.
-          For 'Offense', 'Defense', 'Summary' items, and 'Athleticism' under 'Physicals', provide a direct numeric rating (e.g., `Shooting: 8.5`).
-          For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: `Key: Raw Value | Numeric Rating` (e.g., `Age: 19.5 | 9`).
-          The numeric rating after the ` | ` (space-pipe-space) is used for calculation.
-          This tool calculates category averages and an overall rating, all rounded to one decimal place.
+          Paste player report data using the format shown in the placeholder. Lines starting with 'Player Name',
+          'Offense', 'Defense', 'Physicals', or 'Summary' identify sections. Numeric ratings can be whole numbers (e.g., 8) or decimals (e.g., 7.5).
+          For 'Offense', 'Defense', 'Summary', and 'Athleticism' (under Physicals), provide a direct numeric rating (e.g., `Shooting: 8.5`).
+          For 'Age', 'Height', and 'Wingspan' under 'Physicals', use the format: `Key: Raw Value | Numeric Rating` (e.g., `Age: 19.51 | 9`).
+          The numeric rating after the ` | ` (space-pipe-space) is used for calculation. The tool calculates category averages and an overall rating, rounded to one decimal place.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -213,7 +262,32 @@ export default function PlayerCategoryAveragesCalculator() {
             id="stats-input"
             value={statsInput}
             onChange={(e) => setStatsInput(e.target.value)}
-            placeholder={placeholderText}
+            placeholder={`Player Name 
+
+Offense
+Shooting: 8
+Finishing: 7.5
+Shot Creation: 7
+Passing: 6.5
+Dribbling: 7
+
+Defense
+Perimeter: 8
+Interior: 6
+Playmaking: 5.5
+
+Physicals
+Athleticism: 7.5
+Age: 18.51 | 10
+Height: 6’9 | 10
+Wingspan: 7’0 | 5
+
+Summary
+NBA Ready: 7
+Potential Min: 6
+Potential Mid: 8
+Potential Max: 9.5
+`}
             rows={15}
             className="font-code mt-1 text-xs"
           />
@@ -227,7 +301,7 @@ export default function PlayerCategoryAveragesCalculator() {
       </CardContent>
       <CardFooter className="flex flex-col items-stretch gap-4">
         <Button onClick={handleCalculate} className="w-full bg-primary hover:bg-primary/90">
-            <ListChecks className="mr-2 h-4 w-4" /> Calculate Averages
+          Calculate Averages
         </Button>
         {averages && (
           <>
