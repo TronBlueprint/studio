@@ -54,7 +54,7 @@ export default function AthletcismPercentileCalculator() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-2 md:pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="font-headline">Athleticism Percentile</CardTitle>
@@ -125,6 +125,7 @@ export default function AthletcismPercentileCalculator() {
           </CardContent>
           <CardFooter className="flex flex-col items-stretch gap-4">
             <Button type="submit" variant="primaryGlass" className="w-full">Calculate Percentile</Button>
+            
             {percentileResult !== null && individualPercentiles !== null && (
               <>
                 <Separator />

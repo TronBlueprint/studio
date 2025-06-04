@@ -180,7 +180,7 @@ export default function NbaProspectPhysicalRater() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-2 md:pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="font-headline">Physical Rater</CardTitle>
