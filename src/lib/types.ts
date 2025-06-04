@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const AthleticismSchema = z.object({
@@ -7,13 +8,56 @@ export const AthleticismSchema = z.object({
 });
 export type AthleticismFormData = z.infer<typeof AthleticismSchema>;
 
+const measurementRegex = /^(\d+)'(\d*(\.\d+)?)(?:("|"))?$/; // Matches X'Y, X'Y.Z, X'Y", X'Y.Z"
+
+const parseMeasurementToInches = (val: string): number | null => {
+  const match = val.match(measurementRegex);
+  if (!match) return null;
+
+  try {
+    const feet = parseFloat(match[1]);
+    const inches = parseFloat(match[2]);
+
+    if (isNaN(feet) || isNaN(inches) || inches < 0 || inches >= 12) {
+      return null;
+    }
+    return feet * 12 + inches;
+  } catch {
+    return null;
+  }
+};
+
+const measurementSchema = (fieldLabel: string, minInches: number, maxInches: number, minFeetInches: string, maxFeetInches: string) =>
+  z.string()
+    .min(1, `${fieldLabel} is required.`)
+    .refine(val => measurementRegex.test(val.trim()), {
+      message: `Invalid ${fieldLabel.toLowerCase()} format. Use F'I or F'I.I (e.g., 6'5 or 6'5.5). Quotes are optional.`,
+    })
+    .transform((val, ctx) => {
+      const inches = parseMeasurementToInches(val.trim());
+      if (inches === null) {
+        // This case should ideally be caught by the regex refine, but as a fallback:
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Invalid ${fieldLabel.toLowerCase()} value.`,
+        });
+        return z.NEVER;
+      }
+      return inches;
+    })
+    .refine(inches => inches >= minInches && inches <= maxInches, {
+      message: `${fieldLabel} must be between ${minFeetInches} (${minInches} inches) and ${maxFeetInches} (${maxInches} inches).`,
+    });
+
+
 export const NbaProspectSchema = z.object({
-  age: z.coerce.number().min(17, "Min 17 years").max(30, "Max 30 years"), // Adjusted min age based on Python common draft eligibility
-  height: z.coerce.number().min(60, "Min 60 inches (5'0\")").max(90, "Max 90 inches (7'6\")"), // Adjusted min height
-  wingspan: z.coerce.number().min(60, "Min 60 inches (5'0\")").max(100, "Max 100 inches (8'4\")"), // Adjusted wingspan
+  age: z.coerce.number().min(17, "Min 17 years").max(30, "Max 30 years"),
+  height: measurementSchema("Height", 60, 90, "5'0\"", "7'6\""),
+  wingspan: measurementSchema("Wingspan", 60, 100, "5'0\"", "8'4\""),
   position: z.enum(['PG', 'SG', 'SF', 'PF', 'C'], { required_error: "Please select a position." }),
 });
 export type NbaProspectFormData = z.infer<typeof NbaProspectSchema>;
+
 
 export const POSITIONS: { value: NbaProspectFormData['position']; label: string }[] = [
   { value: "PG", label: "Point Guard (PG)" },
